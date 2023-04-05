@@ -1,0 +1,94 @@
+<script setup lang='ts'>
+
+import { computed, ref } from 'vue'
+import { NButton, NInput, NModal, useMessage } from 'naive-ui'
+import { initConnect, createRoom, joinRoom } from '../../utils/connect'
+import { requestToSignin, fetchInitialRoomList } from '../../api'
+
+// import { fetchVerify } from '@/api'
+// import { useAuthStore } from '@/store'
+// import Icon403 from '@/icons/403.vue'
+
+interface Props {
+    visible: boolean
+}
+
+defineProps<Props>()
+
+// const authStore = useAuthStore()
+
+const ms = useMessage()
+
+const loading = ref(false)
+const token = ref('')
+const name = ref('')
+const password = ref('')
+
+const disabled = computed(() => !name.value.trim() || !name.value.trim() || loading.value)
+const resData = async () => {
+  const res: any = await requestToSignin('roomName')
+  // console.log('res===>', res)
+  const token: string = res.payload.userId
+  const userName: string = res.payload.userName
+  initConnect(token, userName)
+  createRoom('testroom')
+  const res2: any = await fetchInitialRoomList('')
+  console.log('res2===>', res2)
+  // joinRoom('')
+}
+
+
+async function handleVerify() {
+    const secretKey = token.value.trim()
+
+    if (!secretKey)
+        return
+
+    try {
+        loading.value = true
+        await resData()
+        // await fetchVerify(secretKey)
+        // authStore.setToken(secretKey)
+        ms.success('success')
+        window.location.reload()
+    }
+    catch (error: any) {
+        ms.error(error.message ?? 'error')
+        // authStore.removeToken()
+        token.value = ''
+    }
+    finally {
+        loading.value = false
+    }
+}
+
+function handlePress(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        handleVerify()
+    }
+}
+</script>
+
+<template>
+    <NModal :show="visible" style="width: 90%; max-width: 640px">
+        <div class="p-10 bg-white rounded dark:bg-slate-800">
+            <div class="space-y-4">
+                <header class="space-y-2">
+                    <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-neutral-200">
+                        请注册
+                    </h2>
+                    <p class="text-base text-center text-slate-500 dark:text-slate-500">
+                        {{ $t('common.unauthorizedTips') }}
+                    </p>
+                    <!-- <Icon403 class="w-[200px] m-auto" /> -->
+                </header>
+                <NInput v-model:value="name" type="text" placeholder="请输入名称" @keypress="handlePress" />
+                <NInput v-model:value="password" type="text" placeholder="请输入密码" @keypress="handlePress" />
+                <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleVerify">
+                    {{ $t('common.verify') }}
+                </NButton>
+            </div>
+        </div>
+    </NModal>
+</template>
