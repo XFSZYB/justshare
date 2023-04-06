@@ -3,18 +3,34 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
-import { Message } from './components'
+import { Message,SearchBox } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore } from '@/store'
+import { useChatStore,useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
+import { initConnect, createRoom, joinRoom } from '../../utils/connect'
+import { requestToSignin, fetchInitialRoomList } from '../../api'
 
 let controller = new AbortController()
+const connectStore = useConnectStore()
 
+const resData = async () => {
+    const userData:any = JSON.parse(localStorage.getItem('userData') || '{}')
+    connectStore.setUserId(userData.id)
+    connectStore.setUserName(userData.name)
+    initConnect(userData.id, userData.name)
+        const roomListRes:any = await fetchInitialRoomList('')
+        if(roomListRes.status==='Success'){
+          // console.log('roomListRes==>',roomListRes)
+          connectStore.setRoomList(roomListRes.payload.rooms)
+        }
+      
+}
+resData()
 const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
@@ -404,6 +420,10 @@ onUnmounted(() => {
         ref="scrollRef"
         class="h-full overflow-hidden overflow-y-auto"
       >
+      <div v-if="!isMobile" class="flex w-full p-4">
+
+        <SearchBox />
+      </div>
       
         <div id="image-wrapper" class="w-full max-w-screen-xl m-auto" :class="[isMobile ? 'p-2' : 'p-4']">
           <template v-if="!dataSources.length">

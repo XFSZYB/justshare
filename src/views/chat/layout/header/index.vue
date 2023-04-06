@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import type { CSSProperties } from 'vue'
+
 import { computed, nextTick, ref } from 'vue'
 import { SvgIcon } from '@/components/common'
-import { SearchBox } from '../../components'
+import  SearchBox  from '../../components/SearchBox/index.vue'
 import { useAppStore, useChatStore } from '@/store'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
 // const { isMobile } = useBasicLayout()
-let searchText = ref('')
+
 let expand = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
@@ -24,28 +24,14 @@ function onScrollToTop() {
   if (scrollRef)
     nextTick(() => scrollRef.scrollTop = 0)
 }
-function search() {
-  expand.value = !expand.value
-  if (searchText && expand.value) {
 
-  }
-}
-function onScrollToBottom() {
-  const scrollRef = document.querySelector('#scrollRef')
-  if (scrollRef)
-    nextTick(() => scrollRef.scrollTop = scrollRef.scrollHeight)
+
+function changeExpand (val:boolean ) {
+  expand.value = val 
+
 }
 
-const getMobileClass = computed<CSSProperties>(() => {
-  if (expand.value) {
-    return {
-      width: '80%'
-    }
-  }
-  return {
-    width: 'auto'
-  }
-})
+
 
 </script>
 
@@ -62,7 +48,7 @@ const getMobileClass = computed<CSSProperties>(() => {
         @dblclick="onScrollToTop">
         {{ currentChatHistory?.title ?? '' }}
       </h1>
-      <SearchBox />
+      <SearchBox @changeExpand="changeExpand"/>
 
     </div>
   </header>
