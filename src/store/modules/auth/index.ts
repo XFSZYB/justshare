@@ -18,7 +18,10 @@ export const useAuthStore = defineStore('auth-store', {
     async getSession() {
       try {
         // const { data } = await fetchSession<{ auth: boolean }>()
-        const data= {auth:true}
+        const userData = localStorage.getItem('userData') || '{}'
+        console.log('userData',userData)
+        const userName = JSON.parse(userData).name ? true : false
+        const data = { auth: userName }
         this.session = { ...data }
         return Promise.resolve(data)
       }

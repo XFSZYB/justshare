@@ -8,7 +8,10 @@ export function setupPageGuard(router: Router) {
       try {
         const data = await authStore.getSession()
         if (String(data.auth) === 'false' && authStore.token)
-          authStore.removeToken()
+          {authStore.removeToken()}
+       else if(String(data.auth) === 'false'){
+        next({ name: 'signIn' })
+       }
         next()
       }
       catch (error) {

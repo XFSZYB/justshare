@@ -4,6 +4,8 @@ import { NInput, NPopconfirm, NScrollbar } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
+import { initConnect, createRoom, joinRoom } from '../../../../utils/connect'
+import { requestToSignin, fetchInitialRoomList } from '../../../../api'
 
 const { isMobile } = useBasicLayout()
 
@@ -36,8 +38,10 @@ function handleDelete(index: number, event?: MouseEvent | TouchEvent) {
 
 function handleEnter({ uuid }: Chat.History, isEdit: boolean, event: KeyboardEvent) {
   event?.stopPropagation()
-  if (event.key === 'Enter')
+  if (event.key === 'Enter'){
     chatStore.updateHistory(uuid, { isEdit })
+  }
+   
 }
 
 function isActive(uuid: number) {

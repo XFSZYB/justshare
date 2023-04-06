@@ -1,14 +1,16 @@
 <script setup lang='ts'>
 
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { NButton, NInput, NModal, useMessage } from 'naive-ui'
 import { initConnect, createRoom, joinRoom } from '../../utils/connect'
 import { requestToSignin, fetchInitialRoomList } from '../../api'
-
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 // import { fetchVerify } from '@/api'
 // import { useAuthStore } from '@/store'
 // import Icon403 from '@/icons/403.vue'
-
+const router = useRouter()
+const { isMobile } = useBasicLayout()
 interface Props {
     visible: boolean
 }
@@ -16,6 +18,9 @@ interface Props {
 defineProps<Props>()
 
 // const authStore = useAuthStore()
+// const data: any = localStorage.getItem('userData') || {
+//     name: 'users'
+// }
 
 const ms = useMessage()
 
@@ -26,23 +31,28 @@ const password = ref('')
 
 const disabled = computed(() => !name.value.trim() || !name.value.trim() || loading.value)
 const resData = async () => {
-  const res: any = await requestToSignin('roomName')
-  // console.log('res===>', res)
-  const token: string = res.payload.userId
-  const userName: string = res.payload.userName
-  initConnect(token, userName)
-  createRoom('testroom')
-  const res2: any = await fetchInitialRoomList('')
-  console.log('res2===>', res2)
-  // joinRoom('')
+    const res: any = await requestToSignin(name.value.trim())
+    const token: string = res.payload.userId
+    const userName: string = res.payload.userName
+    initConnect(token, userName)
+    localStorage.setItem('userData', JSON.stringify({ name: userName }))
+    if (res.payload) {
+        router.push('/chat')
+    }
 }
 
-
+// if (data && data.name) {
+//     name.value = data.name
+//     resData()
+// }
 async function handleVerify() {
-    const secretKey = token.value.trim()
+    // const secretKey = token.value.trim()
 
-    if (!secretKey)
+    // if (!secretKey)
+    //     return
+    if (!name.value.trim()) {
         return
+    }
 
     try {
         loading.value = true
@@ -50,7 +60,7 @@ async function handleVerify() {
         // await fetchVerify(secretKey)
         // authStore.setToken(secretKey)
         ms.success('success')
-        window.location.reload()
+        // window.location.reload()
     }
     catch (error: any) {
         ms.error(error.message ?? 'error')
@@ -71,7 +81,8 @@ function handlePress(event: KeyboardEvent) {
 </script>
 
 <template>
-    <NModal :show="visible" style="width: 90%; max-width: 640px">
+  <div class="h-full dark:bg-[#24272e] transition-all" :class="[isMobile ? 'p-0' : 'p-4']">
+    <NModal :show="true" style="width: 90%; max-width: 540px">
         <div class="p-10 bg-white rounded dark:bg-slate-800">
             <div class="space-y-4">
                 <header class="space-y-2">
@@ -91,4 +102,5 @@ function handlePress(event: KeyboardEvent) {
             </div>
         </div>
     </NModal>
+</div>
 </template>

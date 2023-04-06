@@ -2,7 +2,7 @@
 import type { CSSProperties } from 'vue'
 import { computed, nextTick, ref } from 'vue'
 import { SvgIcon } from '@/components/common'
-import { NButton, NInput, NInputGroup } from 'naive-ui'
+import { SearchBox } from '../../components'
 import { useAppStore, useChatStore } from '@/store'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 
@@ -62,12 +62,7 @@ const getMobileClass = computed<CSSProperties>(() => {
         @dblclick="onScrollToTop">
         {{ currentChatHistory?.title ?? '' }}
       </h1>
-      <n-input-group style="margin-right: 10px;justify-content: flex-end;" :style="getMobileClass">
-        <n-input v-if="expand" :style="{ width: '80%' }" />
-        <n-button type="primary" ghost @click="search">
-          搜索
-        </n-button>
-      </n-input-group>
+      <SearchBox />
 
     </div>
   </header>
