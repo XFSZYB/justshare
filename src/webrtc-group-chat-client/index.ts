@@ -149,6 +149,7 @@ export default {
    */
 
   sendChatMessageToAllPeer(message: string) {
+    console.error('PeerConnectionManager.peerConnectionMap===>',PeerConnectionManager.peerConnectionMap)
     DataChannelManager.sendChatMessageToAllPeer(PeerConnectionManager.peerConnectionMap, message);
   },
   onChatMessageReceived: function (handler: (chatMessage: ChatMessage) => void) {

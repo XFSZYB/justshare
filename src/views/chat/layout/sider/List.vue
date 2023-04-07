@@ -4,8 +4,8 @@ import { NInput, NPopconfirm, NScrollbar } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { initConnect, createRoom, joinRoom } from '../../../../utils/connect'
-import { requestToSignin, fetchInitialRoomList } from '../../../../api'
+// import { initConnect, createRoom, joinRoom } from '../../../../connect'
+// import { requestToSignin, fetchInitialRoomList } from '../../../../api'
 
 const { isMobile } = useBasicLayout()
 

@@ -3,7 +3,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NButton, NInput, NModal, useMessage } from 'naive-ui'
-import { initConnect, createRoom, joinRoom } from '../../utils/connect'
+import { initConnect, createRoom, joinRoom } from '../../connect'
 import { requestToSignin, fetchInitialRoomList } from '../../api'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useConnectStore } from '@/store'

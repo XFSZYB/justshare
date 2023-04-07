@@ -7,10 +7,14 @@ export const useConnectStore = defineStore('connect-store', {
             roomList: {},
             userId: '',
             userName: '',
-            roomsData: <any>[]
+            roomsData: <any>[],
+            peerInfo:{}
         }
     },
     actions: {
+        setPeerInfo(peerInfo:any){
+            this.peerInfo = peerInfo
+        },
         setUserId(userid: string) {
             this.userId = userid
         },

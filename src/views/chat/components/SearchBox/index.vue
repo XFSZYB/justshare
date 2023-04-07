@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { NButton, NInputGroup, NSelect } from 'naive-ui'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useConnectStore } from '@/store'
-import { joinRoom } from '@/utils/connect'
+import { joinRoom } from '@/connect'
 
 interface Emit {
     (ev: 'changeExpand', val: boolean): void
@@ -19,15 +19,15 @@ const roomsData = computed(() =>  connectStore.roomsData )
 
 const { isMobile } = useBasicLayout()
 const selectedValue = ref('')
-const searchText = ref('')
 const expand = ref(false)
 function search() {
-    expand.value = !expand.value
-    emit('changeExpand', expand.value)
-    console.log('searchText===>',selectedValue.value)
-    if (((expand.value && isMobile.value)|| !isMobile.value) && selectedValue.value.trim()) {
+    const expandVal = expand.value
+    if (((expandVal && isMobile.value)|| !isMobile.value) && selectedValue.value.trim()) {
+        console.error('joint room')
        joinRoom(selectedValue.value)
     }
+    expand.value = !expandVal
+    emit('changeExpand', !expandVal)
 }
 const getExpandClass = computed<CSSProperties>(() => {
     if (!isMobile.value) {

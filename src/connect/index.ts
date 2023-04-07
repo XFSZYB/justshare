@@ -1,7 +1,16 @@
 const url = `ws://127.0.0.1:8000/ws`
-import GroupChatService from "../../webrtc-group-chat-client";
+import GroupChatService from "../webrtc-group-chat-client";
+import { useChatStore,useConnectStore } from '@/store'
 
+const updateStore =()=>{
+    const connectStore = useConnectStore()
+    return connectStore
+    // connectStore.setRoomList(rooms)
+}
 
+export const sendTextMsg = (msg:string)=>{
+    GroupChatService.sendChatMessageToAllPeer(msg); 
+} 
 
 export const initConnect = (token: string, userName: string) => {
     GroupChatService.connect(`${url}?token=${token}&userName=${userName}`);
@@ -37,7 +46,7 @@ export const leaveRoom = (roomId: string) => {
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
     if (rooms) {
-        console.log('onRoomsInfoUpdated==>', rooms)
+        updateStore().setRoomList(rooms)
         //   store.dispatch(updateRoomList(rooms));
     }
 });
@@ -89,10 +98,38 @@ GroupChatService.onLocalVideoMuteAvaliableChanged((avaliable) => {
 
 GroupChatService.onChatMessageReceived((message) => {
     console.log('onChatMessageReceived==>', message)
+    const defaultMessage = {
+        userId: "unknown user id",
+        userName: "unknown user name",
+        text: "unknown message",
+      };
+      if (message && typeof message.peerId === "string") {
+        defaultMessage.userId = message.peerId;
+      }
+      if (message && typeof message.peerName === "string") {
+        defaultMessage.userName = message.peerName;
+      }
+      if (message && typeof message.text === "string") {
+        defaultMessage.text = message.text;
+      }
+  
+      const timestamp = (new Date()).getTime();
+      const id = `${defaultMessage.userId}-${timestamp}`;
+      const textMessage = {
+        id,
+        timestamp,
+        userId: defaultMessage.userId,
+        userName: defaultMessage.userName,
+        isLocalSender: false,
+        text: defaultMessage.text,
+        isRead: false,
+        isNew: true,
+      };
     // store.dispatch(receiveTextMessage(message));
 });
 
 GroupChatService.onPeersInfoChanged((peersInfo) => {
     console.log('onPeersInfoChanged==>', peersInfo)
+    updateStore().setPeerInfo(peersInfo)
     // store.dispatch(updateMembershipPeersInfo(peersInfo));
 });

@@ -74,8 +74,9 @@ function _sendChatMessageToAllPeer(peerConnectionMap: PeerConnectionMap, message
     console.debug(`WebRTCGroupChatService: unexpected message during chat messaging`, message);
     return;
   }
-
+  console.error('peerConnectionMap===>',peerConnectionMap)
   peerConnectionMap.forEach((peerConnection, peerId) => {
+    console.error('peerConnectionMapItem====>',peerConnection, peerId)
     _sendChatMessageToPeer(message, peerId, peerConnection);
   });
 }
@@ -89,8 +90,9 @@ function _sendChatMessageToPeer(
     console.debug(`WebRTCGroupChatService: unexpected message during chat messaging`, message);
     return;
   }
-
+console.error('_peerChatMessagingChannelMap===>',_peerChatMessagingChannelMap)
   const channel = _peerChatMessagingChannelMap.getChannel(peerId, CHAT_MESSAGING_CHANNEL_LABEL);
+  console.error('channel===>',channel)
   if (channel) {
     _sendChatMessageWithPeerDataChannel(message, channel, peerId);
   } else {
@@ -383,6 +385,7 @@ function _createAndStoreDataChannel(
   label: string,
   options?: CreatingDataChannelOptions
 ) {
+  console.error('=====checkpoint====')
   if (peerId.length === 0 || label.length === 0) {
     console.debug(
       `WebRTCGroupChatService: unexpected peerId( ${peerId} ) / label( ${label} ) during data channel creating`
@@ -391,7 +394,7 @@ function _createAndStoreDataChannel(
   }
 
   const channel = peerConnection.createDataChannel(label);
-
+  console.error('channeldata===>',channel)
   console.debug(
     `WebRTCGroupChatService: a new data channel of label(${label}) for a peer(${peerId}) has been created`,
     channel
@@ -428,6 +431,8 @@ function _createAndStoreDataChannel(
 
     if (label === CHAT_MESSAGING_CHANNEL_LABEL) {
       _peerChatMessagingChannelMap.setChannel(peerId, label, channel);
+      console.error('_peerChatMessagingChannelMap===>',_peerChatMessagingChannelMap)
+
     } else if (label === FILE_META_DATA_CHANNEL_LABEL) {
       _peerFileMetaDataChannelMap.setChannel(peerId, label, channel);
     } else {
@@ -607,7 +612,7 @@ function _handlePeerConnectionDataChannelEvent(
 ) {
   const channel = event.channel as NegotiatableDataChannel;
   const label = channel.label;
-
+   console.error('_handlePeerConnectionDataChannelEvent',channel)
   console.debug(`WebRTCGroupChatService: fired 'ondatachannel' with a channel of label (${label})`);
 
   if (label === CHAT_MESSAGING_CHANNEL_LABEL) {
@@ -697,15 +702,15 @@ async function _handleReceiverChannelFileBufferMessage(event: MessageEvent, peer
   );
 
   if (data === START_OF_FILE_BUFFER_MESSAGE) {
-    console.log('checkpoint_end1')
+
     FileCacheManager.deleteReceivingCancelled(peerId, fileHash);
     FileCacheManager.resetReceivingBuffer(peerId, fileHash, false);
   } else if (data === CANCEL_OF_FILE_BUFFER_MESSAGE) {
-    console.log('checkpoint_end2')
+
     FileCacheManager.setReceivingCancelled(peerId, fileHash, true);
     FileCacheManager.resetReceivingBuffer(peerId, fileHash, true);
   } else if (data === END_OF_FILE_BUFFER_MESSAGE) {
-    console.log('checkpoint_end3')
+
     const channel = _peerFileBufferChannelMap.getChannel(peerId, label);
 
     if (!channel) {
@@ -752,6 +757,7 @@ export default {
     _sendChatMessageToAllPeer(peerConnectionMap, message);
   },
   onChatMessageReceived: function (handler: (chatMessage: ChatMessage) => void) {
+    console.error('onChatMessageReceived====>',handler)
     _handleChatMessageReceived = handler;
   },
 

@@ -3,32 +3,34 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
-import { Message,SearchBox } from './components'
+import { Message, SearchBox } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore,useConnectStore } from '@/store'
+import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
-import { initConnect, createRoom, joinRoom } from '../../utils/connect'
-import { requestToSignin, fetchInitialRoomList } from '../../api'
+import { initConnect, } from '../../connect'
+import { fetchInitialRoomList } from '../../api'
+import { sendTextMsg } from '@/connect'
+// import GroupChatService from "../../webrtc-group-chat-client";
 
 let controller = new AbortController()
 const connectStore = useConnectStore()
 
 const resData = async () => {
-    const userData:any = JSON.parse(localStorage.getItem('userData') || '{}')
-    connectStore.setUserId(userData.id)
-    connectStore.setUserName(userData.name)
-    initConnect(userData.id, userData.name)
-        const roomListRes:any = await fetchInitialRoomList('')
-        if(roomListRes.status==='Success'){
-          // console.log('roomListRes==>',roomListRes)
-          connectStore.setRoomList(roomListRes.payload.rooms)
-        }
-      
+  const userData: any = JSON.parse(localStorage.getItem('userData') || '{}')
+  connectStore.setUserId(userData.id)
+  connectStore.setUserName(userData.name)
+  initConnect(userData.id, userData.name)
+  const roomListRes: any = await fetchInitialRoomList('')
+  if (roomListRes.status === 'Success') {
+    // console.log('roomListRes==>',roomListRes)
+    connectStore.setRoomList(roomListRes.payload.rooms)
+  }
+
 }
 resData()
 const route = useRoute()
@@ -53,9 +55,24 @@ const loading = ref<boolean>(false)
 function handleSubmit() {
   onConversation()
 }
-
 async function onConversation() {
-  const message = prompt.value
+  sendTextMsg(prompt.value)
+  // GroupChatService.sendChatMessageToAllPeer(prompt.value);  
+  const userId = connectStore.userId
+  const userName = connectStore.userName
+  const timestamp = (new Date()).getTime();
+  const id = `${userId}-${timestamp}`;
+  const textMessage = {
+    id,
+    timestamp,
+    userId: userId,
+    userName: userName,
+    isLocalSender: true,
+    // text: prompt.value,
+    isRead: true,
+    isNew: false,
+  };
+    const message = prompt.value
 
   if (loading.value)
     return
@@ -63,11 +80,12 @@ async function onConversation() {
   if (!message || message.trim() === '')
     return
 
-  controller = new AbortController()
+  // controller = new AbortController()
 
   addChat(
     +uuid,
     {
+      ...textMessage,
       dateTime: new Date().toLocaleString(),
       text: message,
       inversion: true,
@@ -78,115 +96,140 @@ async function onConversation() {
   )
   scrollToBottom()
 
-  loading.value = true
-  prompt.value = ''
-
-  let options: Chat.ConversationRequest = {}
-  const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
-
-  if (lastContext)
-    options = { ...lastContext }
-
-  addChat(
-    +uuid,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      loading: true,
-      inversion: false,
-      error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
-    },
-  )
-  scrollToBottom()
-
-  try {
-    await fetchChatAPIProcess<Chat.ConversationResponse>({
-      prompt: message,
-      options,
-      signal: controller.signal,
-      onDownloadProgress: ({ event }) => {
-        const xhr = event.target
-        const { responseText } = xhr
-        // Always process the final line
-        const lastIndex = responseText.lastIndexOf('\n')
-        let chunk = responseText
-        if (lastIndex !== -1)
-          chunk = responseText.substring(lastIndex)
-        try {
-          const data = JSON.parse(chunk)
-          updateChat(
-            +uuid,
-            dataSources.value.length - 1,
-            {
-              dateTime: new Date().toLocaleString(),
-              text: data.text ?? '',
-              inversion: false,
-              error: false,
-              loading: false,
-              conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-              requestOptions: { prompt: message, options: { ...options } },
-            },
-          )
-          scrollToBottom()
-        }
-        catch (error) {
-          //
-        }
-      },
-    })
-    scrollToBottom()
-  }
-  catch (error: any) {
-    const errorMessage = error?.message ?? t('common.wrong')
-
-    if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          loading: false,
-        },
-      )
-      scrollToBottom()
-      return
-    }
-
-    const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
-
-    if (currentChat?.text && currentChat.text !== '') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          text: `${currentChat.text}\n[${errorMessage}]`,
-          error: false,
-          loading: false,
-        },
-      )
-      return
-    }
-
-    updateChat(
-      +uuid,
-      dataSources.value.length - 1,
-      {
-        dateTime: new Date().toLocaleString(),
-        text: errorMessage,
-        inversion: false,
-        error: true,
-        loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, options: { ...options } },
-      },
-    )
-    scrollToBottom()
-  }
-  finally {
-    loading.value = false
-  }
 }
+// async function onConversation() {
+//   const message = prompt.value
+
+//   if (loading.value)
+//     return
+
+//   if (!message || message.trim() === '')
+//     return
+
+//   controller = new AbortController()
+
+//   addChat(
+//     +uuid,
+//     {
+//       dateTime: new Date().toLocaleString(),
+//       text: message,
+//       inversion: true,
+//       error: false,
+//       conversationOptions: null,
+//       requestOptions: { prompt: message, options: null },
+//     },
+//   )
+//   scrollToBottom()
+
+//   loading.value = true
+//   prompt.value = ''
+
+//   let options: Chat.ConversationRequest = {}
+//   const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
+
+//   if (lastContext)
+//     options = { ...lastContext }
+
+//   addChat(
+//     +uuid,
+//     {
+//       dateTime: new Date().toLocaleString(),
+//       text: '',
+//       loading: true,
+//       inversion: false,
+//       error: false,
+//       conversationOptions: null,
+//       requestOptions: { prompt: message, options: { ...options } },
+//     },
+//   )
+//   scrollToBottom()
+
+//   try {
+//     await fetchChatAPIProcess<Chat.ConversationResponse>({
+//       prompt: message,
+//       options,
+//       signal: controller.signal,
+//       onDownloadProgress: ({ event }) => {
+//         const xhr = event.target
+//         const { responseText } = xhr
+//         // Always process the final line
+//         const lastIndex = responseText.lastIndexOf('\n')
+//         let chunk = responseText
+//         if (lastIndex !== -1)
+//           chunk = responseText.substring(lastIndex)
+//         try {
+//           const data = JSON.parse(chunk)
+//           updateChat(
+//             +uuid,
+//             dataSources.value.length - 1,
+//             {
+//               dateTime: new Date().toLocaleString(),
+//               text: data.text ?? '',
+//               inversion: false,
+//               error: false,
+//               loading: false,
+//               conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
+//               requestOptions: { prompt: message, options: { ...options } },
+//             },
+//           )
+//           scrollToBottom()
+//         }
+//         catch (error) {
+//           //
+//         }
+//       },
+//     })
+//     scrollToBottom()
+//   }
+//   catch (error: any) {
+//     const errorMessage = error?.message ?? t('common.wrong')
+
+//     if (error.message === 'canceled') {
+//       updateChatSome(
+//         +uuid,
+//         dataSources.value.length - 1,
+//         {
+//           loading: false,
+//         },
+//       )
+//       scrollToBottom()
+//       return
+//     }
+
+//     const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
+
+//     if (currentChat?.text && currentChat.text !== '') {
+//       updateChatSome(
+//         +uuid,
+//         dataSources.value.length - 1,
+//         {
+//           text: `${currentChat.text}\n[${errorMessage}]`,
+//           error: false,
+//           loading: false,
+//         },
+//       )
+//       return
+//     }
+
+//     updateChat(
+//       +uuid,
+//       dataSources.value.length - 1,
+//       {
+//         dateTime: new Date().toLocaleString(),
+//         text: errorMessage,
+//         inversion: false,
+//         error: true,
+//         loading: false,
+//         conversationOptions: null,
+//         requestOptions: { prompt: message, options: { ...options } },
+//       },
+//     )
+//     scrollToBottom()
+//   }
+//   finally {
+//     loading.value = false
+//   }
+// }
 
 async function onRegenerate(index: number) {
   if (loading.value)
@@ -415,16 +458,12 @@ onUnmounted(() => {
 <template>
   <div class="flex flex-col w-full h-full" :class="wrapClass">
     <main class="flex-1 overflow-hidden">
-      <div
-        id="scrollRef"
-        ref="scrollRef"
-        class="h-full overflow-hidden overflow-y-auto"
-      >
-      <div v-if="!isMobile" class="flex w-full p-4">
+      <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
+        <div v-if="!isMobile" class="flex w-full p-4">
 
-        <SearchBox />
-      </div>
-      
+          <SearchBox />
+        </div>
+
         <div id="image-wrapper" class="w-full max-w-screen-xl m-auto" :class="[isMobile ? 'p-2' : 'p-4']">
           <template v-if="!dataSources.length">
             <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
@@ -434,17 +473,9 @@ onUnmounted(() => {
           </template>
           <template v-else>
             <div>
-              <Message
-                v-for="(item, index) of dataSources"
-                :key="index"
-                :date-time="item.dateTime"
-                :text="item.text"
-                :inversion="item.inversion"
-                :error="item.error"
-                :loading="item.loading"
-                @regenerate="onRegenerate(index)"
-                @delete="handleDelete(index)"
-              />
+              <Message v-for="(item, index) of dataSources" :key="index" :date-time="item.dateTime" :text="item.text"
+                :inversion="item.inversion" :error="item.error" :loading="item.loading" @regenerate="onRegenerate(index)"
+                @delete="handleDelete(index)" />
               <div class="sticky bottom-0 left-0 flex justify-center">
                 <NButton v-if="loading" type="warning" @click="handleStop">
                   <template #icon>
@@ -471,13 +502,8 @@ onUnmounted(() => {
               <SvgIcon icon="ri:download-2-line" />
             </span>
           </HoverButton>
-          <NInput
-            v-model:value="prompt"
-            type="textarea"
-            :autosize="{ minRows: 1, maxRows: 2 }"
-            :placeholder="placeholder"
-            @keypress="handleEnter"
-          />
+          <NInput v-model:value="prompt" type="textarea" :autosize="{ minRows: 1, maxRows: 2 }" :placeholder="placeholder"
+            @keypress="handleEnter" />
           <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
             <template #icon>
               <span class="dark:text-black">
