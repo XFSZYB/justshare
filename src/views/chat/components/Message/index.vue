@@ -3,17 +3,21 @@ import { ref } from 'vue'
 import { NDropdown } from 'naive-ui'
 import AvatarComponent from './Avatar.vue'
 import TextComponent from './Text.vue'
+import NormalFile from './NormalFile.vue'
 import { SvgIcon } from '@/components/common'
 import { copyText } from '@/utils/format'
 import { useIconRender } from '@/hooks/useIconRender'
 import { t } from '@/locales'
 
 interface Props {
+  msgType?:string
   dateTime?: string
   text?: string
   inversion?: boolean
   error?: boolean
   loading?: boolean
+  href?:string
+  download?:string
 }
 
 interface Emit {
@@ -73,13 +77,16 @@ function handleRegenerate() {
         class="flex items-end gap-1 mt-2"
         :class="[inversion ? 'flex-row-reverse' : 'flex-row']"
       >
+      <NormalFile :href="href || ''" :download="download || ''" v-if="msgType==='file'" />
         <TextComponent
+          v-else
           ref="textRef"
           :inversion="inversion"
           :error="error"
           :text="text"
           :loading="loading"
         />
+       
         <div class="flex flex-col">
           <button
             v-if="!inversion"

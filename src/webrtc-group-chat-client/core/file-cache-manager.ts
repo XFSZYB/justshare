@@ -152,8 +152,9 @@ let _sendingHashToMetaData: FileHashToMeta = {};
 
 function _prepareSendingMetaData(hashToFile: FileHashToFile) {
   // _sendingHashToMetaData = { ..._sendingHashToMetaData };
-
+   console.warn('hashToFile===>',hashToFile)
   for (const [fileHash, file] of Object.entries(hashToFile)) {
+    console.warn('fileHash===>',fileHash,file)
     _sendingHashToMetaData[fileHash] = {
       name: file.name,
       type: file.type,

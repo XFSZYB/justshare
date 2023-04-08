@@ -336,7 +336,13 @@ onUnmounted(() => {
 })
 function handleChange(e: any) {
   console.log(e)
-  sendFileMsg(e.fileList)
+  if(e.fileList.length>0){
+    const fileList:File[] = e.fileList.map((item:any)=>{
+      return item.file
+    })
+    sendFileMsg(fileList)
+  }
+
 }
 </script>
 
@@ -358,7 +364,7 @@ function handleChange(e: any) {
           </template>
           <template v-else>
             <div>
-              <Message v-for="(item, index) of dataSources" :key="index" :date-time="item.dateTime" :text="item.text"
+              <Message v-for="(item, index) of dataSources" :key="index" :msg-type="item.msgType" :date-time="item.dateTime" :text="item.text" :href="item.href" :download="item.download"
                 :inversion="item.inversion" :error="item.error" :loading="item.loading" @regenerate="onRegenerate(index)"
                 @delete="handleDelete(index)" />
               <div class="sticky bottom-0 left-0 flex justify-center">
