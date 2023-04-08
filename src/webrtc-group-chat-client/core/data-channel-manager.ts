@@ -153,6 +153,7 @@ function _handleChatMessagingChannelMessage(
     return;
   }
   if (_handleChatMessageReceived) {
+    console.warn('----_handleChatMessageReceived==')
     _handleChatMessageReceived({ peerId, peerName, text: message });
   }
 }

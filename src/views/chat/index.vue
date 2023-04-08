@@ -12,7 +12,7 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
-import { initConnect, } from '../../connect'
+import { initConnect,getConnectStatus } from '../../connect'
 import { fetchInitialRoomList } from '../../api'
 import { sendTextMsg } from '@/connect'
 // import GroupChatService from "../../webrtc-group-chat-client";
@@ -27,12 +27,12 @@ const resData = async () => {
   initConnect(userData.id, userData.name)
   const roomListRes: any = await fetchInitialRoomList('')
   if (roomListRes.status === 'Success') {
-    // console.log('roomListRes==>',roomListRes)
+    console.log('roomListRes==>', roomListRes)
     connectStore.setRoomList(roomListRes.payload.rooms)
   }
 
 }
-resData()
+// resData()
 const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
@@ -45,7 +45,7 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom } = useScroll()
 
 const { uuid } = route.params as { uuid: string }
-
+connectStore.setCurrentUUID(uuid)
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
@@ -72,7 +72,7 @@ async function onConversation() {
     isRead: true,
     isNew: false,
   };
-    const message = prompt.value
+  const message = prompt.value
 
   if (loading.value)
     return
@@ -94,142 +94,11 @@ async function onConversation() {
       requestOptions: { prompt: message, options: null },
     },
   )
+  prompt.value =''
   scrollToBottom()
 
 }
-// async function onConversation() {
-//   const message = prompt.value
 
-//   if (loading.value)
-//     return
-
-//   if (!message || message.trim() === '')
-//     return
-
-//   controller = new AbortController()
-
-//   addChat(
-//     +uuid,
-//     {
-//       dateTime: new Date().toLocaleString(),
-//       text: message,
-//       inversion: true,
-//       error: false,
-//       conversationOptions: null,
-//       requestOptions: { prompt: message, options: null },
-//     },
-//   )
-//   scrollToBottom()
-
-//   loading.value = true
-//   prompt.value = ''
-
-//   let options: Chat.ConversationRequest = {}
-//   const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
-
-//   if (lastContext)
-//     options = { ...lastContext }
-
-//   addChat(
-//     +uuid,
-//     {
-//       dateTime: new Date().toLocaleString(),
-//       text: '',
-//       loading: true,
-//       inversion: false,
-//       error: false,
-//       conversationOptions: null,
-//       requestOptions: { prompt: message, options: { ...options } },
-//     },
-//   )
-//   scrollToBottom()
-
-//   try {
-//     await fetchChatAPIProcess<Chat.ConversationResponse>({
-//       prompt: message,
-//       options,
-//       signal: controller.signal,
-//       onDownloadProgress: ({ event }) => {
-//         const xhr = event.target
-//         const { responseText } = xhr
-//         // Always process the final line
-//         const lastIndex = responseText.lastIndexOf('\n')
-//         let chunk = responseText
-//         if (lastIndex !== -1)
-//           chunk = responseText.substring(lastIndex)
-//         try {
-//           const data = JSON.parse(chunk)
-//           updateChat(
-//             +uuid,
-//             dataSources.value.length - 1,
-//             {
-//               dateTime: new Date().toLocaleString(),
-//               text: data.text ?? '',
-//               inversion: false,
-//               error: false,
-//               loading: false,
-//               conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-//               requestOptions: { prompt: message, options: { ...options } },
-//             },
-//           )
-//           scrollToBottom()
-//         }
-//         catch (error) {
-//           //
-//         }
-//       },
-//     })
-//     scrollToBottom()
-//   }
-//   catch (error: any) {
-//     const errorMessage = error?.message ?? t('common.wrong')
-
-//     if (error.message === 'canceled') {
-//       updateChatSome(
-//         +uuid,
-//         dataSources.value.length - 1,
-//         {
-//           loading: false,
-//         },
-//       )
-//       scrollToBottom()
-//       return
-//     }
-
-//     const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
-
-//     if (currentChat?.text && currentChat.text !== '') {
-//       updateChatSome(
-//         +uuid,
-//         dataSources.value.length - 1,
-//         {
-//           text: `${currentChat.text}\n[${errorMessage}]`,
-//           error: false,
-//           loading: false,
-//         },
-//       )
-//       return
-//     }
-
-//     updateChat(
-//       +uuid,
-//       dataSources.value.length - 1,
-//       {
-//         dateTime: new Date().toLocaleString(),
-//         text: errorMessage,
-//         inversion: false,
-//         error: true,
-//         loading: false,
-//         conversationOptions: null,
-//         requestOptions: { prompt: message, options: { ...options } },
-//       },
-//     )
-//     scrollToBottom()
-//   }
-//   finally {
-//     loading.value = false
-//   }
-// }
 
 async function onRegenerate(index: number) {
   if (loading.value)
@@ -444,12 +313,21 @@ const footerClass = computed(() => {
     classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-4', 'overflow-hidden']
   return classes
 })
-
+let timeout: any = null
 onMounted(() => {
+  // console.warn('==onMounted==')
+  timeout = setTimeout(() => {
+    resData()
+  }, 1000)
+  // if(!getConnectStatus()){
+  //   resData()
+  // }
   scrollToBottom()
 })
 
 onUnmounted(() => {
+  clearTimeout(timeout)
+  // console.warn('==onUnmounted==')
   if (loading.value)
     controller.abort()
 })

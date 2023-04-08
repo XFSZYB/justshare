@@ -4,14 +4,22 @@ import { defineStore } from 'pinia'
 export const useConnectStore = defineStore('connect-store', {
     state: () => {
         return {
+            currentUUID:'',
             roomList: {},
             userId: '',
             userName: '',
             roomsData: <any>[],
-            peerInfo:{}
+            peerInfo:{},
+            inputFiles:'',
         }
     },
     actions: {
+        setInputFiles(inputFiles:string){
+            this.inputFiles = inputFiles
+        },
+        setCurrentUUID(uuid:string){
+            this.currentUUID = uuid
+        },
         setPeerInfo(peerInfo:any){
             this.peerInfo = peerInfo
         },
@@ -27,6 +35,10 @@ export const useConnectStore = defineStore('connect-store', {
             this.roomsData = this.getRoomList(rooms)
         },
         getRoomList(rooms: object) {
+            console.log('initRoomsData====>',rooms)
+            if(!rooms){
+                return []
+            }
             const tempList = Object.values(rooms).map((item: any) => {
                 const tempItem: any = {}
                 tempItem.label = item.name

@@ -132,13 +132,13 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
   const peerId = incomingPassthrough.from;
   const peerConnection = _locatePeerConnection(peerId);
   if (!peerConnection) {
-    console.debug(
+    console.warn(
       `WebRTCGroupChatService: unexpected non-existent peer connection ( ${peerConnection} ) with peerId of ${peerId} after '_locatePeerConnection' method`
     );
     return;
   }
 
-  console.debug(
+  console.warn(
     `WebRTCGroupChatService: before consuming this sdp, the current peerConnection signalingState is ${
       peerConnection.signalingState
     }, the localDescription type is ${
@@ -150,19 +150,19 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   if ("iceCandidate" in incomingPassthrough) {
     const { iceCandidate } = incomingPassthrough;
-    console.debug(`WebRTCGroupChatService: this passthrough carries IceCandidate`, iceCandidate);
+    console.warn(`WebRTCGroupChatService: this passthrough carries IceCandidate`, iceCandidate);
 
     peerConnection
       .addIceCandidate(iceCandidate)
       .then(() => {
-        console.debug(
+        console.warn(
           `WebRTCGroupChatService: peerId (${peerId})'s 'addIceCandidate' done with no issue`
         );
       })
       .catch((error) => {
         // Suppress ignored offer's candidates
         if (!peerConnection.ignoreRemoteOffer) {
-          console.error(`WebRTCGroupChatService: Found error with message of ${error}`);
+          console.warn(`WebRTCGroupChatService: Found error with message of ${error}`);
         }
       });
     return;
@@ -170,7 +170,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
 
   const { sdp, callingConstraints } = incomingPassthrough;
 
-  console.debug(`WebRTCGroupChatService: this passthrough carries sdp (${sdp.type})`);
+  console.warn(`WebRTCGroupChatService: this passthrough carries sdp (${sdp.type})`);
 
   const isPeerConnectionStable =
     peerConnection.signalingState == "stable" ||
@@ -180,7 +180,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
   const isOfferCollision = sdp.type == "offer" && !isPeerConnectionReadyForOffer;
 
   if (isOfferCollision) {
-    console.debug(
+    console.warn(
       `WebRTCGroupChatService: an offer collision has happened ( signalingState: ${peerConnection.signalingState}, isSettingRemoteAnswerPending: ${peerConnection.isSettingRemoteAnswerPending}, makingOffer: ${peerConnection.makingOffer}, isPeerConnectionStable: ${isPeerConnectionStable}, sdp type: ${sdp.type} )`
     );
   }
@@ -189,7 +189,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
     isOfferCollision && !peerConnection.isLocalPoliteDuringOfferCollision;
 
   if (peerConnection.ignoreRemoteOffer) {
-    console.debug(
+    console.warn(
       `WebRTCGroupChatService: the local peer ignore the ${sdp.type} typed SDP for peer connection of peerId ( ${peerId} ), during this offer collision`
     );
     return;
@@ -200,32 +200,36 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
   }
 
   peerConnection.callingConstraints = callingConstraints;
-  console.debug(`callingConstraints:`, callingConstraints);
+  console.warn(`callingConstraints:`, callingConstraints);
 
-  console.debug(
+  console.warn(
     `WebRTCGroupChatService: before setting 'setRemoteDescription', the remoteDescription is ${
       peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
     }`
   );
-
+  console.warn('sdp====>',sdp)
+  // if(!(sdp.type =="answer" || sdp.type == "offer" || sdp.type =="pranswer" || sdp.type == "rollback")){
+  //   return
+  // }
   peerConnection
     .setRemoteDescription(sdp) // SRD rolls back as needed
     .then(() => {
-      console.debug(
+      console.warn(
         `WebRTCGroupChatService: the local peer accept the ( ${sdp.type} ) typed SDP as a param of 'setRemoteDescription' for peer connection of peerId ( ${peerId} )`
       );
-      console.debug(
+      console.warn(
         `WebRTCGroupChatService: after setting 'setRemoteDescription', the remoteDescription is ${
           peerConnection.remoteDescription ? peerConnection.remoteDescription.type : "unknown"
         }`
       );
-
+      console.warn('----sdpExecStep1====')
       // remote description is answer
       if (sdp.type == "answer") {
+        console.warn('----sdpExecStep2====')
         peerConnection.isSettingRemoteAnswerPending = false;
         return;
       }
-
+      console.warn('----sdpExecStep3====')
       // remote description is offer
       return peerConnection.setLocalDescription();
     })
@@ -237,6 +241,7 @@ function _handleNewPassthroughArival(incomingPassthrough: IncomingPassthrough) {
         sdp: peerConnection.localDescription!,
         to: peerId,
       };
+      console.warn('----passtimes===')
       SignalingManager.passThroughSignaling(outgoingSDPPassThrough);
     })
     .catch((error) => {
@@ -440,6 +445,7 @@ export default {
     _handleNewPeerArivalInternally(newPeerArivalPayload);
   },
   handleNewPassthroughArival: function (incomingPassthrough: IncomingPassthrough) {
+    console.error('----3')
     _handleNewPassthroughArival(incomingPassthrough);
   },
   handleNewPeerLeave: function (newPeerLeavePayload: NewPeerLeavePayload) {

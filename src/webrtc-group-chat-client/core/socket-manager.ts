@@ -148,6 +148,7 @@ function _emitMessageEvent(socketUrl: string, emitType: number | string, emitPay
     type: emitType,
     payload: emitPayload,
   };
+  console.warn('sendData',JSON.stringify(data))
   socket.send(JSON.stringify(data));
 }
 

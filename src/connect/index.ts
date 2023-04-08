@@ -1,17 +1,27 @@
 const url = `ws://127.0.0.1:8000/ws`
 import GroupChatService from "../webrtc-group-chat-client";
-import { useChatStore,useConnectStore } from '@/store'
+// import { useChat } from '../views/chat/hooks/useChat'
+import { useChatStore, useConnectStore ,} from '@/store'
 
-const updateStore =()=>{
+
+const updateConnectStore = () => {
     const connectStore = useConnectStore()
     return connectStore
     // connectStore.setRoomList(rooms)
 }
 
-export const sendTextMsg = (msg:string)=>{
-    GroupChatService.sendChatMessageToAllPeer(msg); 
-} 
+const updateChatStore=()=>{
+    const chatStore = useChatStore()
+    return chatStore
+}
+ 
 
+export const sendTextMsg = (msg: string) => {
+    GroupChatService.sendChatMessageToAllPeer(msg);
+}
+export const getConnectStatus = () => {
+    return GroupChatService.getConnectStatus()
+}
 export const initConnect = (token: string, userName: string) => {
     GroupChatService.connect(`${url}?token=${token}&userName=${userName}`);
 }
@@ -46,7 +56,8 @@ export const leaveRoom = (roomId: string) => {
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
     if (rooms) {
-        updateStore().setRoomList(rooms)
+        console.warn('onRoomsInfoUpdated===>', rooms)
+        updateConnectStore().setRoomList(rooms)
         //   store.dispatch(updateRoomList(rooms));
     }
 });
@@ -102,20 +113,20 @@ GroupChatService.onChatMessageReceived((message) => {
         userId: "unknown user id",
         userName: "unknown user name",
         text: "unknown message",
-      };
-      if (message && typeof message.peerId === "string") {
+    };
+    if (message && typeof message.peerId === "string") {
         defaultMessage.userId = message.peerId;
-      }
-      if (message && typeof message.peerName === "string") {
+    }
+    if (message && typeof message.peerName === "string") {
         defaultMessage.userName = message.peerName;
-      }
-      if (message && typeof message.text === "string") {
+    }
+    if (message && typeof message.text === "string") {
         defaultMessage.text = message.text;
-      }
-  
-      const timestamp = (new Date()).getTime();
-      const id = `${defaultMessage.userId}-${timestamp}`;
-      const textMessage = {
+    }
+
+    const timestamp = (new Date()).getTime();
+    const id = `${defaultMessage.userId}-${timestamp}`;
+    const textMessage = {
         id,
         timestamp,
         userId: defaultMessage.userId,
@@ -124,12 +135,25 @@ GroupChatService.onChatMessageReceived((message) => {
         text: defaultMessage.text,
         isRead: false,
         isNew: true,
-      };
+    };
+  
+    updateChatStore().addChatByUuid(
+        +updateConnectStore().currentUUID,
+        {
+          ...textMessage,
+          dateTime: new Date().toLocaleString(),
+        //   text: message,
+          inversion: false,
+          error: false,
+          conversationOptions: null,
+          requestOptions: { prompt: defaultMessage.text, options: null },
+        },
+      )
     // store.dispatch(receiveTextMessage(message));
 });
 
 GroupChatService.onPeersInfoChanged((peersInfo) => {
     console.log('onPeersInfoChanged==>', peersInfo)
-    updateStore().setPeerInfo(peersInfo)
+    updateConnectStore().setPeerInfo(peersInfo)
     // store.dispatch(updateMembershipPeersInfo(peersInfo));
 });

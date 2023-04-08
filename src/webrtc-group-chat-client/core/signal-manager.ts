@@ -79,6 +79,7 @@ function _handleSocketNewWebRTCPeerArival(payload: NewPeerArivalPayload) {
 }
 
 function _handleSocketNewWebRTCPassthroughArival(payload: IncomingPassthrough) {
+  console.error('----1')
   console.debug("WebRTCGroupChatService: WEBRTC_NEW_PASSTHROUGH signal received");
   // internal usage
   if (_handleNewPassthroughArival) {
@@ -161,6 +162,7 @@ function _joinRoomSignaling(roomId: string) {
   if (!_webSocketUrl || _webSocketUrl.length === 0 || roomId.length === 0) {
     return;
   }
+  console.warn('-----2')
   SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.JOIN_ROOM, {
     roomId: roomId,
   });
@@ -181,6 +183,7 @@ function _passThroughSignaling(payload: unknown) {
   if (!_webSocketUrl || _webSocketUrl.length === 0) {
     return;
   }
+  console.warn('-----1')
   SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.WEBRTC_NEW_PASSTHROUGH, payload);
 }
 
@@ -229,6 +232,7 @@ export default {
     _handleWebSocketClosed = handler;
   },
   onJoinRoomInSuccess: function (handler: (payload: JoinRoomSuccessPayload) => void) {
+    console.error('----01')
     _handleJoinRoomSuccess = handler;
   },
   onRoomsInfoUpdated: function (handler: (payload: UpdateRoomsPayload) => void) {
@@ -246,9 +250,11 @@ export default {
     _handleNewPeerLeaved = handler;
   },
   onWebRTCNewPassthroughArival: function (handler: (payload: IncomingPassthrough) => void) {
+    console.error('----2')
     _handleNewPassthroughArival = handler;
   },
   onWebRTCNewPeerArivalInternally: function (handler: (payload: NewPeerArivalPayload) => void) {
+    console.error('----02')
     _handleNewPeerArivalInternally = handler;
   },
 };

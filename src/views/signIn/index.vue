@@ -3,7 +3,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NButton, NInput, NModal, useMessage } from 'naive-ui'
-import { initConnect, createRoom, joinRoom } from '../../connect'
+// import { initConnect, createRoom, joinRoom } from '../../connect'
 import { requestToSignin, fetchInitialRoomList } from '../../api'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useConnectStore } from '@/store'
@@ -38,11 +38,11 @@ const resData = async () => {
     connectStore.setUserName(res.payload.userName)
     const token: string = res.payload.userId
     const userName: string = res.payload.userName
-    initConnect(token, userName)
+    // initConnect(token, userName)
     localStorage.setItem('userData', JSON.stringify({ name: userName ,id:token}))
     if (res.payload) {
-        const roomListRes = await fetchInitialRoomList('')
-        connectStore.setRoomList(roomListRes)
+        // const roomListRes = await fetchInitialRoomList('')
+        // connectStore.setRoomList(roomListRes)
         router.push('/chat')
     }
 }

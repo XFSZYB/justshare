@@ -94,7 +94,13 @@ export default {
     SignalingManager.webSocketUrl = webSocketUrl;
     SignalingManager.connect();
   },
-
+  
+  getConnectStatus:function(){
+    if(SignalingManager.webSocketUrl){
+      return true
+    }
+    return false
+  },
   /**
    * disconnect
    *
