@@ -1,7 +1,8 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { NButton, NInput, useDialog, useMessage } from 'naive-ui'
+import { NButton, NInput, useDialog, useMessage, NUpload } from 'naive-ui'
+// import type { UploadInst, UploadFileInfo } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message, SearchBox } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -12,9 +13,9 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
-import { initConnect,getConnectStatus } from '../../connect'
+import { initConnect } from '../../connect'
 import { fetchInitialRoomList } from '../../api'
-import { sendTextMsg } from '@/connect'
+import { sendTextMsg, sendFileMsg } from '@/connect'
 // import GroupChatService from "../../webrtc-group-chat-client";
 
 let controller = new AbortController()
@@ -94,7 +95,7 @@ async function onConversation() {
       requestOptions: { prompt: message, options: null },
     },
   )
-  prompt.value =''
+  prompt.value = ''
   scrollToBottom()
 
 }
@@ -253,7 +254,9 @@ function handleDelete(index: number) {
     },
   })
 }
+function handleUploadFile() {
 
+}
 function handleClear() {
   if (loading.value)
     return
@@ -331,6 +334,10 @@ onUnmounted(() => {
   if (loading.value)
     controller.abort()
 })
+function handleChange(e: any) {
+  console.log(e)
+  sendFileMsg(e.fileList)
+}
 </script>
 
 <template>
@@ -370,10 +377,15 @@ onUnmounted(() => {
     <footer :class="footerClass">
       <div class="w-full max-w-screen-xl m-auto">
         <div class="flex items-center justify-between space-x-2">
-          <HoverButton @click="handleClear">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:delete-bin-line" />
-            </span>
+          <HoverButton>
+            <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="material-symbols:upload-sharp" />
+              </span>
+            </n-upload>
+            <!-- <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="material-symbols:upload-sharp" />
+                </span> -->
           </HoverButton>
           <HoverButton @click="handleExport">
             <span class="text-xl text-[#4f555e] dark:text-white">

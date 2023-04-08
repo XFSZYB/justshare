@@ -1,4 +1,5 @@
 import { FileHashToFile } from "./common-types";
+import  CryptoJS from 'crypto-js' 
 
 export async function getUniqueFiles(files: File[], timestamp?: number) {
   const filesToAdd: FileHashToFile = {};
@@ -13,16 +14,20 @@ export async function getUniqueFiles(files: File[], timestamp?: number) {
   return filesToAdd;
 }
 
-export async function getSHA256(string: string) {
-  const strBuffer = new TextEncoder().encode(string);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", strBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-  const hashHex = hashArray
-    .map((b) => {
-      return b.toString(16).padStart(2, "0");
-    })
-    .join("");
+export async function getSHA256(string: string) {
+  // const strBuffer = new TextEncoder().encode(string);
+ 
+  const hashHex = CryptoJS.SHA256(string).toString();
+  // CryptoJS.enc.Utf8
+  // const hashBuffer = await crypto.subtle.digest("SHA-256", strBuffer);
+  // const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+  // const hashHex = hashArray
+  //   .map((b) => {
+  //     return b.toString(16).padStart(2, "0");
+  //   })
+  //   .join("");
 
   return hashHex;
 }

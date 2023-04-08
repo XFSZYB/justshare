@@ -88,7 +88,7 @@ export default {
 
   connect: function (webSocketUrl: string) {
     if (webSocketUrl.length === 0) {
-      console.error(`WebRTCGroupChatController: unexpected websocket url(${webSocketUrl})`);
+      console.debug(`WebRTCGroupChatController: unexpected websocket url(${webSocketUrl})`);
       return;
     }
     SignalingManager.webSocketUrl = webSocketUrl;
@@ -155,7 +155,6 @@ export default {
    */
 
   sendChatMessageToAllPeer(message: string) {
-    console.error('PeerConnectionManager.peerConnectionMap===>',PeerConnectionManager.peerConnectionMap)
     DataChannelManager.sendChatMessageToAllPeer(PeerConnectionManager.peerConnectionMap, message);
   },
   onChatMessageReceived: function (handler: (chatMessage: ChatMessage) => void) {

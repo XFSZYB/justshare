@@ -19,6 +19,9 @@ const updateChatStore=()=>{
 export const sendTextMsg = (msg: string) => {
     GroupChatService.sendChatMessageToAllPeer(msg);
 }
+export const sendFileMsg =(files: File[])=>{
+    GroupChatService.sendFileToAllPeer(files);
+}
 export const getConnectStatus = () => {
     return GroupChatService.getConnectStatus()
 }

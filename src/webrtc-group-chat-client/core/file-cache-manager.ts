@@ -488,7 +488,7 @@ function _scheduleAddBufferTask(
     console.debug(`WebRTCGroupChatService: during addIDBBufferTask, use fulFillment`, fulFillment);
     const startOffset = fulFillment.fulFilledAtOffset;
     if (startOffset === undefined) {
-      console.error(`WebRTCGroupChatService: skipped an invalid startOffset of ${startOffset}`);
+      console.debug(`WebRTCGroupChatService: skipped an invalid startOffset of ${startOffset}`);
       return new Promise<IDBBufferPersistingPromiseFulfillment>((resolve, reject) => {
         resolve({
           fulFilledType: IDBBufferPersistingPromiseFulFilledType.FULFILLED_ERROR,
