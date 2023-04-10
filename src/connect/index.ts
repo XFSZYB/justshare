@@ -283,14 +283,14 @@ GroupChatService.onFileSendingRelatedDataChanged(
             const isFileProgressCompleted =
                 isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
             console.warn('--sendFileMsg--', newMessageContainer)
-            if ( messageItem.fileProgress===0 ) {
+            if ( messageItem.fileProgress===0 && !updateChatStore().getChatByUuidAndChatId(+updateConnectStore().currentUUID,messageItem.id)) {
+                console.warn('????')
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
-                        text: `文件名：${messageItem.fileName}
-                        文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        text: `文件名：${messageItem.fileName} \n文件大小： ${formatBytes(messageItem.fileSize)}`,
                         // msgType: 'file',
                         inversion: true,
                         error: false,
@@ -301,14 +301,14 @@ GroupChatService.onFileSendingRelatedDataChanged(
                     },
                 )
             } else if(isFileProgressCompleted) {
+                console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
                     +updateConnectStore().currentUUID,
                     messageItem.id,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
-                        text: `文件名：${messageItem.fileName}
-                        文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        text: `文件名：${messageItem.fileName} \n文件大小： ${formatBytes(messageItem.fileSize)}`,
                         // msgType: 'file',
                         inversion: true,
                         error: false,
