@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { ref ,onMounted} from 'vue'
 import { NDropdown } from 'naive-ui'
 import AvatarComponent from './Avatar.vue'
 import TextComponent from './Text.vue'
@@ -8,6 +8,7 @@ import { SvgIcon } from '@/components/common'
 import { copyText } from '@/utils/format'
 import { useIconRender } from '@/hooks/useIconRender'
 import { t } from '@/locales'
+import { getReceivFileData } from '@/connect'
 
 interface Props {
   msgType?:string
@@ -17,9 +18,10 @@ interface Props {
   error?: boolean
   loading?: boolean
   href?:string
-  download?:string
+  download?:string,
+  allData:any,
 }
-
+const dbHref = ref<any>(null)
 interface Emit {
   (ev: 'regenerate'): void
   (ev: 'delete'): void
@@ -59,6 +61,17 @@ function handleSelect(key: 'copyRaw' | 'copyText' | 'delete') {
 function handleRegenerate() {
   emit('regenerate')
 }
+onMounted(()=>{
+  if(props.msgType==='file'){
+    getReceivFileData(props.allData.userId,props.allData.fileHash).then((e:any)=>{
+      dbHref.value = window.URL.createObjectURL(e)
+      console.warn('getReceivFileData===>',e)
+    }).catch(e=>{
+      console.error('getReceivFileData===>',e)
+    })
+  }
+})
+
 </script>
 
 <template>
@@ -77,7 +90,7 @@ function handleRegenerate() {
         class="flex items-end gap-1 mt-2"
         :class="[inversion ? 'flex-row-reverse' : 'flex-row']"
       >
-      <NormalFile :href="href || ''" :download="download || ''" v-if="msgType==='file'" />
+      <NormalFile :href=" dbHref || href || ''" :download="download || ''" v-if="msgType==='file'" />
         <TextComponent
           v-else
           ref="textRef"

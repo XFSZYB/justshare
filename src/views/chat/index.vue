@@ -15,7 +15,7 @@ import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import { initConnect } from '../../connect'
 import { fetchInitialRoomList } from '../../api'
-import { sendTextMsg, sendFileMsg } from '@/connect'
+import { sendTextMsg, sendFileMsg,getReceivFileData } from '@/connect'
 // import GroupChatService from "../../webrtc-group-chat-client";
 
 let controller = new AbortController()
@@ -365,7 +365,7 @@ function handleChange(e: any) {
           <template v-else>
             <div>
               <Message v-for="(item, index) of dataSources" :key="index" :msg-type="item.msgType" :date-time="item.dateTime" :text="item.text" :href="item.href" :download="item.download"
-                :inversion="item.inversion" :error="item.error" :loading="item.loading" @regenerate="onRegenerate(index)"
+                :inversion="item.inversion" :error="item.error" :loading="item.loading" :all-data="item" @regenerate="onRegenerate(index)"
                 @delete="handleDelete(index)" />
               <div class="sticky bottom-0 left-0 flex justify-center">
                 <NButton v-if="loading" type="warning" @click="handleStop">

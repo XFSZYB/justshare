@@ -2,6 +2,7 @@ const url = `ws://127.0.0.1:8000/ws`
 import GroupChatService, { SendingSliceName, ReceivingSliceName } from "../webrtc-group-chat-client";
 // import { useChat } from '../views/chat/hooks/useChat'
 import { useChatStore, useConnectStore, } from '@/store'
+import {formatBytes} from '@/utils/format-bytes'
 
 
 const updateConnectStore = () => {
@@ -113,7 +114,9 @@ const fileMessageContainerBuilder = (
     // return newFileMessageContainer;
     return newFileMessageContent
 };
-
+export  const getReceivFileData = async (userid:string,filehash:string)=>{
+ return  await  GroupChatService.fileCacheManager(userid,filehash)
+}
 export const sendTextMsg = (msg: string) => {
     GroupChatService.sendChatMessageToAllPeer(msg);
 }
@@ -263,9 +266,9 @@ GroupChatService.onPeersInfoChanged((peersInfo) => {
 GroupChatService.onFileSendingRelatedDataChanged(
     (sendingRelatedDataProxy, isSendingStatusSending) => {
         console.warn('onFileSendingRelatedDataChanged===>', sendingRelatedDataProxy, isSendingStatusSending)
-        //   if (isSendingStatusSending !== undefined) {
-        //     setIsSendingStatusSending(isSendingStatusSending);
-        //   }
+        if (isSendingStatusSending !== undefined) {
+            // setIsSendingStatusSending(isSendingStatusSending);
+        }
         if (sendingRelatedDataProxy && sendingRelatedDataProxy.fileHashToAllSlices) {
             const newMessageContainer = fileMessageContainerBuilder(
                 updateConnectStore().userId,
@@ -273,20 +276,53 @@ GroupChatService.onFileSendingRelatedDataChanged(
                 true,
                 sendingRelatedDataProxy.fileHashToAllSlices
             );
+            let messageItem: any = { ...newMessageContainer }
+            const isFileProgressValid =
+                messageItem.fileProgress >= 0 &&
+                messageItem.fileSize >= 0;
+            const isFileProgressCompleted =
+                isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
+            const isFileExporterCallable =
+                isFileProgressCompleted && typeof messageItem.fileExporter === "function";
             console.warn('--sendFileMsg--', newMessageContainer)
-            // updateChatStore().addChatByUuid(
-            //     +updateConnectStore().currentUUID,
-            //     {
-            //         ...textMessage,
-            //         dateTime: new Date().toLocaleString(),
-            //         //   text: message,
-            //         inversion: true,
-            //         error: false,
-            //         conversationOptions: null,
-            //         requestOptions: { prompt: defaultMessage.text, options: null },
-            //     },
-            // )
-            // setMessageContainer(newMessageContainer);
+            if (!isFileExporterCallable && messageItem.fileProgress===0 ) {
+                updateChatStore().addChatByUuid(
+                    +updateConnectStore().currentUUID,
+                    {
+                        ...messageItem,
+                        dateTime: new Date().toLocaleString(),
+                        text: `文件名：${messageItem.fileName}
+                               文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        // msgType: 'file',
+                        inversion: true,
+                        error: false,
+                        loading:true,
+                        fileLoading:true,
+                        conversationOptions: null,
+                        requestOptions: { prompt: messageItem.fileName, options: null },
+                    },
+                )
+            } else if(isFileExporterCallable) {
+                updateChatStore().updateChatSomeByUuidAndChatid(
+                    +updateConnectStore().currentUUID,
+                    messageItem.id,
+                    {
+                        ...messageItem,
+                        dateTime: new Date().toLocaleString(),
+                        text: `文件名：${messageItem.fileName}
+                               文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        // msgType: 'file',
+                        inversion: true,
+                        error: false,
+                        loading:false,
+                        fileLoading:false,
+                        conversationOptions: null,
+                        requestOptions: { prompt: messageItem.fileName, options: null },
+                    },
+                )
+            }
+
+
         }
     }
 );
@@ -315,7 +351,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
 
         if (isFileExporterCallable) {
             const handleFileExportSuccess = (file: any) => {
-                console.warn('======file=====',file)
+                console.warn('======file=====', file)
                 if (file === undefined) {
                     alert("This cached file has been deleted, please let your peer send it again");
                     return;
@@ -331,7 +367,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
 
                 a.href = window.URL.createObjectURL(file);
                 a.download = messageItem.fileName;
-                console.warn('===tagA====',a)
+                console.warn('===tagA====', a)
                 messageItem = { ...messageItem, ...a }
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
@@ -348,9 +384,8 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
                 )
             };
             console.warn('===hello====')
-            messageItem.fileExporter().then(handleFileExportSuccess).catch((e:any)=>{console.error(e)});
-        }
+            messageItem.fileExporter().then(handleFileExportSuccess).catch((e: any) => { console.error(e) });
+        } 
 
-        //   setMessageContainer(newMessageContainer);
     }
 });

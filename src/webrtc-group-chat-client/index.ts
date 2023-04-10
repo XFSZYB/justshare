@@ -46,6 +46,7 @@ import PeerConnectionManager from "./core/peer-connection-manager";
 import DataChannelManager from "./core/data-channel-manager";
 import MediaCallingManager from "./core/media-calling-mananger";
 import { formatBytes } from "./core/common-util";
+import FileCacheManager from './core/file-cache-manager'
 
 function _resetRTCRelatedState() {
   MediaCallingManager.hangUpCalling(true);
@@ -76,6 +77,9 @@ export {
 };
 
 export default {
+  async fileCacheManager(userid:string,filehash:string){
+    return await FileCacheManager.getReceivFileData(userid,filehash)
+  },
   set peerConnectionConfig(config: RTCConfiguration) {
     PeerConnectionManager.peerConnectionConfig = config;
   },

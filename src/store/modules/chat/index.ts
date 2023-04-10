@@ -86,6 +86,17 @@ export const useChatStore = defineStore('chat-store', {
         return this.chat[chatIndex].data[index]
       return null
     },
+    getChatByUuidAndChatId(uuid: number, chatid: string) {
+      if (!uuid || uuid === 0) {
+        if (this.chat.length)
+          return this.chat[0].data.filter(((item: any) => item.id === chatid))[0]
+        return null
+      }
+      const chatIndex = this.chat.findIndex(item => item.uuid === uuid)
+      if (chatIndex !== -1)
+        return this.chat[chatIndex].data.filter(((item: any) => item.id === chatid))[0]
+      return null
+    },
 
     addChatByUuid(uuid: number, chat: Chat.Chat) {
       if (!uuid || uuid === 0) {
@@ -144,7 +155,33 @@ export const useChatStore = defineStore('chat-store', {
         this.recordState()
       }
     },
+    updateChatSomeByUuidAndChatid(uuid: number, chatid: string, chat: Partial<Chat.Chat>) {
+      if (!uuid || uuid === 0) {
+        if (this.chat.length) {
+          this.chat[0].data = this.chat[0].data.map((item: any) => {
+            if (item.id === chatid) {
+              const tempChat = this.chat[0].data.filter((item: any) => { item.id === chatid })[0]
+              return { ...tempChat, ...chat }
+            }
+            return item
+          })
+          this.recordState()
+        }
+        return
+      }
 
+      const chatIndex = this.chat.findIndex(item => item.uuid === uuid)
+      if (chatIndex !== -1) {
+        this.chat[chatIndex].data = this.chat[chatIndex].data.map((item: any) => {
+          if (item.id === chatid) {
+            const tempChat = this.chat[chatIndex].data.filter((item: any) => { item.id === chatid })[0]
+            return { ...tempChat, ...chat }
+          }
+          return item
+        })
+        this.recordState()
+      }
+    },
     deleteChatByUuid(uuid: number, index: number) {
       if (!uuid || uuid === 0) {
         if (this.chat.length) {

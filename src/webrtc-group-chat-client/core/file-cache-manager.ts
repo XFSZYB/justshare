@@ -1407,7 +1407,33 @@ export default {
   //
   // Receiving buffer persistence
   //
+   getReceivFileData(peerId: string, fileHash: string,){
+    return new Promise((resolve,reject)=>{
+    if (!_IDBDatabasePromise) {
+    console.error(
+      `WebRTCGroupChatService: unfound IDB promise during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+    );
+    resolve(null)
+    return;
+  }
 
+  _IDBDatabasePromise
+    .then((IDBDatabase) => {
+      if (!IDBDatabase) {
+        throw new Error(
+          `WebRTCGroupChatService: unfound IDB during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+        );
+      }
+      resolve(_getIDBReceivingFile(peerId, fileHash, IDBDatabase));
+      return
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+    })
+  
+
+  },
   addReceivingBuffer(peerId: string, fileHash: string, buffer: ArrayBuffer) {
     _addReceivingBuffer(peerId, fileHash, buffer);
   },

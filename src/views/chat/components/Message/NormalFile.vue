@@ -9,7 +9,7 @@ interface Props {
   text?: string
   loading?: boolean
   href:string
-  download:string
+  download:string,
 }
 // const href = ref('')
 // const download = ref('')
@@ -19,7 +19,9 @@ const { isMobile } = useBasicLayout()
 
 // const textRef = ref<HTMLElement>()
 
-
+const isImg = computed (()=>{
+  return props.download && props.download.split('.jpg')
+})
 
 const wrapClass = computed(() => {
   return [
@@ -30,32 +32,18 @@ const wrapClass = computed(() => {
     props.inversion ? 'bg-[#d2f9d1]' : 'bg-[#f4f6f8]',
     props.inversion ? 'dark:bg-[#a1dc95]' : 'dark:bg-[#1e1e20]',
     { 'text-red-500': props.error },
+    !isMobile.value ? 'max-w-xs' : 'max-w-[200px]'
   ]
 })
 
-const text = computed(() => {
-  const value = props.text ?? ''
-  if (!props.inversion){
-  //  return mdi.render(value)
-  }
- 
-  return value
-}) 
+
 
 </script>
 
 <template>
     <div class="text-black" :class="wrapClass">
-      <a :href="href" :download="download" >{{href}}{{download}}</a>
-      <!-- <template v-if="loading">
-        <span class="dark:text-white w-[4px] h-[20px] block animate-blink" />
-      </template>
-      <template v-else>
-        <div ref="textRef" class="leading-relaxed break-words">
-          <div v-if="!inversion" class="markdown-body" v-html="text" />
-          <div v-else class="whitespace-pre-wrap" v-text="text" />
-        </div>
-      </template> -->
+      <img :src="href" v-if="isImg"/>
+      <a :href="href" :download="download" >{{download}}</a>
     </div>
   </template>
   
