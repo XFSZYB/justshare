@@ -282,17 +282,15 @@ GroupChatService.onFileSendingRelatedDataChanged(
                 messageItem.fileSize >= 0;
             const isFileProgressCompleted =
                 isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
-            const isFileExporterCallable =
-                isFileProgressCompleted && typeof messageItem.fileExporter === "function";
             console.warn('--sendFileMsg--', newMessageContainer)
-            if (!isFileExporterCallable && messageItem.fileProgress===0 ) {
+            if ( messageItem.fileProgress===0 ) {
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
                         text: `文件名：${messageItem.fileName}
-                               文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        文件大小： ${formatBytes(messageItem.fileSize)}`,
                         // msgType: 'file',
                         inversion: true,
                         error: false,
@@ -302,7 +300,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
                         requestOptions: { prompt: messageItem.fileName, options: null },
                     },
                 )
-            } else if(isFileExporterCallable) {
+            } else if(isFileProgressCompleted) {
                 updateChatStore().updateChatSomeByUuidAndChatid(
                     +updateConnectStore().currentUUID,
                     messageItem.id,
@@ -310,7 +308,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
                         text: `文件名：${messageItem.fileName}
-                               文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        文件大小： ${formatBytes(messageItem.fileSize)}`,
                         // msgType: 'file',
                         inversion: true,
                         error: false,

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
+import {  SvgIcon } from '@/components/common'
 import { t } from '@/locales'
 
 interface Props {
@@ -8,8 +9,9 @@ interface Props {
   error?: boolean
   text?: string
   loading?: boolean
-  href:string
-  download:string,
+  href: string
+  download: string,
+  fileText: string[]
 }
 // const href = ref('')
 // const download = ref('')
@@ -19,8 +21,12 @@ const { isMobile } = useBasicLayout()
 
 // const textRef = ref<HTMLElement>()
 
-const isImg = computed (()=>{
-  return props.download && props.download.split('.jpg')
+const isImg = computed(() => {
+  return props.download && /\.(png|jpg|gif|jpeg|webp)$/i.test(props.download)
+})
+
+const isVideo = computed(() => {
+  return props.download && /\.(mp4|webm|ogg)$/i.test(props.download)
 })
 
 const wrapClass = computed(() => {
@@ -41,12 +47,25 @@ const wrapClass = computed(() => {
 </script>
 
 <template>
-    <div class="text-black" :class="wrapClass">
-      <img :src="href" v-if="isImg"/>
-      <a :href="href" :download="download" >{{download}}</a>
+  <div class="text-black" :class="wrapClass">
+    <video :src="href" v-if="isVideo" controls></video>
+    <img :src="href" v-if="isImg" />
+    <SvgIcon v-if="!isVideo && !isImg" icon="ant-design:file-unknown-outlined" style="height:48px;width: 48px;" />
+    <div  class="leading-relaxed break-words">
+      <template v-if="!inversion">
+        <div v-for="t in fileText" :key="t" class="markdown-body" :v-text="t" />
+      </template>
+      <template v-else>
+        <div v-for="t in fileText" :key="t" class="whitespace-pre-wrap" :v-text="t" />
+      </template>
+
     </div>
-  </template>
+
+
+    <a :href="href" :download="download">{{ download }}</a>
+  </div>
+</template>
   
-  <style lang="less">
-  @import url(./style.less);
-  </style>
+<style lang="less">
+@import url(./style.less);
+</style>
