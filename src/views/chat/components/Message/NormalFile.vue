@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import {  SvgIcon } from '@/components/common'
+import { SvgIcon } from '@/components/common'
 import { t } from '@/locales'
 
 interface Props {
@@ -51,18 +51,23 @@ const wrapClass = computed(() => {
     <video :src="href" v-if="isVideo" controls></video>
     <img :src="href" v-if="isImg" />
     <SvgIcon v-if="!isVideo && !isImg" icon="ant-design:file-unknown-outlined" style="height:48px;width: 48px;" />
-    <div  class="leading-relaxed break-words">
+    <div class="leading-relaxed break-words">
       <template v-if="!inversion">
-        <div v-for="t in fileText" :key="t" class="markdown-body" :v-text="t" />
+        <text v-for="t in fileText" :key="t" class="markdown-body" :v-text="t">{{ t }}</text>
       </template>
       <template v-else>
-        <div v-for="t in fileText" :key="t" class="whitespace-pre-wrap" :v-text="t" />
+        <text v-for="t in fileText" :key="t" class="whitespace-pre-wrap" :v-text="t">{{ t }}</text>
       </template>
 
     </div>
 
 
-    <a :href="href" :download="download">{{ download }}</a>
+    <a :href="href" :download="download" class="flex">
+      {{ t('common.export') }}
+      <span class="text-xl text-[#4f555e] dark:text-white">
+        <SvgIcon icon="ri:download-2-line" />
+      </span>
+    </a>
   </div>
 </template>
   
