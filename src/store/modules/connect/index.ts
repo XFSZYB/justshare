@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
+import { getCurrentUUID, setCurrentUUID } from './helper'
 
 
 export const useConnectStore = defineStore('connect-store', {
     state: () => {
         return {
-            currentUUID:'',
+            currentUUID:getCurrentUUID(),
             roomList: {},
             userId: '',
             userName: '',
@@ -18,7 +19,8 @@ export const useConnectStore = defineStore('connect-store', {
             this.inputFiles = inputFiles
         },
         setCurrentUUID(uuid:string){
-            this.currentUUID = uuid
+            this.currentUUID = uuid 
+            setCurrentUUID(uuid)
         },
         setPeerInfo(peerInfo:any){
             this.peerInfo = peerInfo

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { getLocalState, setLocalState } from './helper'
+import { getLocalState, setLocalState, defaultState } from './helper'
 import { router } from '@/router'
 
 export const useChatStore = defineStore('chat-store', {
-  state: (): Chat.ChatState => getLocalState(),
+  state: (): Chat.ChatState => defaultState(),
 
   getters: {
     getChatHistoryByCurrentActive(state: Chat.ChatState) {
@@ -23,6 +23,21 @@ export const useChatStore = defineStore('chat-store', {
   },
 
   actions: {
+    async getHistory() {
+      const that =this
+      const cb =function (json: any) {
+        try{
+          // console.warn(json)
+          that.$state = json
+        }catch(e){
+          console.error(e)
+        }
+     
+      }
+      await getLocalState(cb)
+
+
+    },
     addHistory(history: Chat.History, chatData: Chat.Chat[] = []) {
       this.history.unshift(history)
       this.chat.unshift({ uuid: history.uuid, data: chatData })

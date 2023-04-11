@@ -34,19 +34,22 @@ const resData = async () => {
 
 }
 // resData()
-const route = useRoute()
+// const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
 
 const chatStore = useChatStore()
+chatStore.getHistory()
+
 
 useCopyCode()
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom } = useScroll()
 
-const { uuid } = route.params as { uuid: string }
-connectStore.setCurrentUUID(uuid)
+// const { uuid } = route.params as { uuid: string }
+const uuid = connectStore.currentUUID
+// connectStore.setCurrentUUID(uuid)
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
