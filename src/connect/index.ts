@@ -2,7 +2,7 @@ const url = `ws://127.0.0.1:8000/ws`
 import GroupChatService, { SendingSliceName, ReceivingSliceName } from "../webrtc-group-chat-client";
 // import { useChat } from '../views/chat/hooks/useChat'
 import { useChatStore, useConnectStore, } from '@/store'
-import {formatBytes} from '@/utils/format-bytes'
+import { formatBytes } from '@/utils/format-bytes'
 
 
 const updateConnectStore = () => {
@@ -114,8 +114,8 @@ const fileMessageContainerBuilder = (
     // return newFileMessageContainer;
     return newFileMessageContent
 };
-export  const getReceivFileData = async (userid:string,filehash:string)=>{
- return  await  GroupChatService.fileCacheManager(userid,filehash)
+export const getReceivFileData = async (userid: string, filehash: string) => {
+    return await GroupChatService.fileCacheManager(userid, filehash)
 }
 export const sendTextMsg = (msg: string) => {
     GroupChatService.sendChatMessageToAllPeer(msg);
@@ -157,6 +157,14 @@ export const leaveRoom = (roomId: string) => {
 //     },
 //   ],
 // };
+GroupChatService.onWebSocketOpen((payload) => {
+    console.log('onWebSocketOpen===>', payload)
+    // if (payload.type === 'open') {
+        const currentUUID = useConnectStore().currentUUID
+        joinRoom(currentUUID)
+    // }
+
+})
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
     if (rooms) {
@@ -171,6 +179,7 @@ GroupChatService.onJoinRoomInSuccess((payload) => {
     const roomName = payload.roomName;
     if (roomId.length > 0 && roomName.length > 0) {
         console.log('onJoinRoomInSuccess==>', payload)
+        updateConnectStore().setCurrentUUID(payload.roomId)
         //   store.dispatch(updateJoinedRoomId({ roomId, roomName }));
         //   store.dispatch(updateRoomLoadingStatus(loadingStatusEnum.status.IDLE));
     }
@@ -283,7 +292,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             const isFileProgressCompleted =
                 isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
             console.warn('--sendFileMsg--', newMessageContainer)
-            if ( messageItem.fileProgress===0 && !updateChatStore().getChatByUuidAndChatId(+updateConnectStore().currentUUID,messageItem.id)) {
+            if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(+updateConnectStore().currentUUID, messageItem.id)) {
                 console.warn('????')
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
@@ -294,13 +303,13 @@ GroupChatService.onFileSendingRelatedDataChanged(
                         // msgType: 'file',
                         inversion: true,
                         error: false,
-                        loading:true,
-                        fileLoading:true,
+                        loading: true,
+                        fileLoading: true,
                         conversationOptions: null,
                         requestOptions: { prompt: messageItem.fileName, options: null },
                     },
                 )
-            } else if(isFileProgressCompleted) {
+            } else if (isFileProgressCompleted) {
                 console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
                     +updateConnectStore().currentUUID,
@@ -312,8 +321,8 @@ GroupChatService.onFileSendingRelatedDataChanged(
                         // msgType: 'file',
                         inversion: true,
                         error: false,
-                        loading:false,
-                        fileLoading:false,
+                        loading: false,
+                        fileLoading: false,
                         conversationOptions: null,
                         requestOptions: { prompt: messageItem.fileName, options: null },
                     },
@@ -383,7 +392,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
             };
             console.warn('===hello====')
             messageItem.fileExporter().then(handleFileExportSuccess).catch((e: any) => { console.error(e) });
-        } 
+        }
 
     }
 });

@@ -48,7 +48,7 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom } = useScroll()
 
 // const { uuid } = route.params as { uuid: string }
-const uuid = connectStore.currentUUID
+const uuid = connectStore.currentUUID || ''
 // connectStore.setCurrentUUID(uuid)
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))

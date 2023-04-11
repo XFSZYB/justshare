@@ -18,13 +18,14 @@ const connectStore = useConnectStore()
 const roomsData = computed(() =>  connectStore.roomsData )
 
 const { isMobile } = useBasicLayout()
-const selectedValue = ref('')
+const selectedValue = ref(connectStore.currentUUID)
 const expand = ref(false)
 function search() {
     const expandVal = expand.value
     if (((expandVal && isMobile.value)|| !isMobile.value) && selectedValue.value.trim()) {
         console.error('joint room')
        joinRoom(selectedValue.value)
+       
     }
     expand.value = !expandVal
     emit('changeExpand', !expandVal)

@@ -98,7 +98,9 @@ export default {
     SignalingManager.webSocketUrl = webSocketUrl;
     SignalingManager.connect();
   },
-  
+  onWebSocketOpen:function(handler:(payload:any)=>void){
+    SignalingManager.onWebSocketOpen(handler)
+  },
   getConnectStatus:function(){
     if(SignalingManager.webSocketUrl){
       return true
