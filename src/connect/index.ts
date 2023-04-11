@@ -3,6 +3,7 @@ import GroupChatService, { SendingSliceName, ReceivingSliceName } from "../webrt
 // import { useChat } from '../views/chat/hooks/useChat'
 import { useChatStore, useConnectStore, } from '@/store'
 import { formatBytes } from '@/utils/format-bytes'
+import { useRouter } from 'vue-router'
 
 
 const updateConnectStore = () => {
@@ -14,6 +15,11 @@ const updateConnectStore = () => {
 const updateChatStore = () => {
     const chatStore = useChatStore()
     return chatStore
+}
+
+const updateRouter=()=>{
+    const router  = useRouter()
+    return router
 }
 
 const fileMessageContainerBuilder = (
@@ -160,18 +166,30 @@ export const leaveRoom = (roomId: string) => {
 GroupChatService.onWebSocketOpen((payload) => {
     console.log('onWebSocketOpen===>', payload)
     // if (payload.type === 'open') {
-        const currentUUID = useConnectStore().currentUUID
-        joinRoom(currentUUID)
+    const currentUUID = useConnectStore().currentUUID
+    joinRoom(currentUUID)
     // }
 
+})
+
+GroupChatService.onWebSocketClose((payload) => {
+    console.warn('payload===>', payload)
+})
+GroupChatService.onWebSocketUnauthorized((payload) => {
+    console.warn('onWebSocketUnauthorized', payload)
+    if (payload.stauts === 'fail') {
+        localStorage.setItem('userData', '{}')
+        updateRouter().push('/signIn')
+    }
 })
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
     const type = payload.type;
-    const roomId =payload.roomId
+    const roomId = payload.roomId
     const roomName = payload.roomName
-    if(type==='create'){
-        updateChatStore().addHistory({ title: roomName || '', uuid:roomId || '' , isEdit: false })
+    if (type === 'create') {
+        updateChatStore().addHistory({ title: roomName || '', uuid: roomId || '', isEdit: false })
+        updateConnectStore().setCreateRoomLoading(false)
     }
     if (rooms) {
         // console.warn('onRoomsInfoUpdated===>', rooms)
@@ -257,7 +275,7 @@ GroupChatService.onChatMessageReceived((message) => {
     };
 
     updateChatStore().addChatByUuid(
-        +updateConnectStore().currentUUID,
+        updateConnectStore().currentUUID,
         {
             ...textMessage,
             dateTime: new Date().toLocaleString(),
@@ -298,10 +316,10 @@ GroupChatService.onFileSendingRelatedDataChanged(
             const isFileProgressCompleted =
                 isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
             // console.warn('--sendFileMsg--', newMessageContainer)
-            if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(+updateConnectStore().currentUUID, messageItem.id)) {
+            if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(updateConnectStore().currentUUID, messageItem.id)) {
                 // console.warn('????')
                 updateChatStore().addChatByUuid(
-                    +updateConnectStore().currentUUID,
+                    updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
@@ -318,7 +336,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             } else if (isFileProgressCompleted) {
                 // console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
-                    +updateConnectStore().currentUUID,
+                    updateConnectStore().currentUUID,
                     messageItem.id,
                     {
                         ...messageItem,
@@ -383,7 +401,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
                 // console.warn('===tagA====', a)
                 messageItem = { ...messageItem, ...a }
                 updateChatStore().addChatByUuid(
-                    +updateConnectStore().currentUUID,
+                    updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),

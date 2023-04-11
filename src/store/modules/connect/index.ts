@@ -5,6 +5,7 @@ import { getCurrentUUID, setCurrentUUID } from './helper'
 export const useConnectStore = defineStore('connect-store', {
     state: () => {
         return {
+            createRoomLoading:false,
             currentUUID:getCurrentUUID(),
             roomList: {},
             userId: '',
@@ -15,6 +16,9 @@ export const useConnectStore = defineStore('connect-store', {
         }
     },
     actions: {
+        setCreateRoomLoading (flag:boolean){
+            this.createRoomLoading = flag
+        },
         setInputFiles(inputFiles:string){
             this.inputFiles = inputFiles
         },

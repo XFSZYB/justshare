@@ -101,6 +101,12 @@ export default {
   onWebSocketOpen:function(handler:(payload:any)=>void){
     SignalingManager.onWebSocketOpen(handler)
   },
+  onWebSocketClose:function(handler:(payload:any)=>void){
+    SignalingManager.onWebSocketClose(handler)
+  },
+  onWebSocketUnauthorized:function(handle:(payload:any)=>void){
+    SignalingManager.onWebSocketUnauthorized(handle)
+  },
   getConnectStatus:function(){
     if(SignalingManager.webSocketUrl){
       return true

@@ -35,6 +35,8 @@ export enum _SignalType {
   WEBRTC_NEW_PEER_ARIVAL = 12,
   WEBRTC_NEW_PEER_LEAVE = 13,
   WEBRTC_NEW_PASSTHROUGH = 14,
+  UNAUTHORIZED = 15,
+
 }
 
 export interface NewPeerArivalPayloadAboutNewPeer {
@@ -86,9 +88,9 @@ export interface ChatRooms {
 
 export interface UpdateRoomsPayload {
   rooms: ChatRooms;
-  type?:string,
-  roomId?:string,
-  roomName?:string,
+  type?: string,
+  roomId?: string,
+  roomName?: string,
 }
 
 export interface LeaveRoomSuccessPayload {
@@ -117,14 +119,14 @@ export interface SDPPassThrough {
   callingConstraints?: CallingConstraints | null;
 }
 
-export interface OutgoingSDPPassThrough extends SDPPassThrough {}
+export interface OutgoingSDPPassThrough extends SDPPassThrough { }
 
 export interface ICEPassThrough {
   iceCandidate: RTCIceCandidate;
   to: string;
 }
 
-export interface OutgoingICEPassThrough extends ICEPassThrough {}
+export interface OutgoingICEPassThrough extends ICEPassThrough { }
 
 export interface NegotiatablePeerConnection extends RTCPeerConnection {
   peerName?: string;

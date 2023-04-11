@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { NButton, NInput, useDialog, useMessage, NUpload } from 'naive-ui'
+// import { useRoute } from 'vue-router'
+import { NButton, NInput, useDialog, useMessage, NUpload, NSpin, NSpace } from 'naive-ui'
 // import type { UploadInst, UploadFileInfo } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message, SearchBox } from './components'
@@ -15,12 +15,12 @@ import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import { initConnect } from '../../connect'
 import { fetchInitialRoomList } from '../../api'
-import { sendTextMsg, sendFileMsg,getReceivFileData } from '@/connect'
+import { sendTextMsg, sendFileMsg } from '@/connect'
 // import GroupChatService from "../../webrtc-group-chat-client";
 
 let controller = new AbortController()
 const connectStore = useConnectStore()
-
+const show = computed(() => connectStore.createRoomLoading)
 const resData = async () => {
   const userData: any = JSON.parse(localStorage.getItem('userData') || '{}')
   connectStore.setUserId(userData.id)
@@ -50,7 +50,7 @@ const { scrollRef, scrollToBottom } = useScroll()
 // const { uuid } = route.params as { uuid: string }
 const uuid = connectStore.currentUUID || ''
 // connectStore.setCurrentUUID(uuid)
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+const dataSources = computed(() => chatStore.getChatByUuid(uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
 const prompt = ref<string>('')
@@ -87,7 +87,7 @@ async function onConversation() {
   // controller = new AbortController()
 
   addChat(
-    +uuid,
+    uuid,
     {
       ...textMessage,
       dateTime: new Date().toLocaleString(),
@@ -122,7 +122,7 @@ async function onRegenerate(index: number) {
   loading.value = true
 
   updateChat(
-    +uuid,
+    uuid,
     index,
     {
       dateTime: new Date().toLocaleString(),
@@ -339,8 +339,8 @@ onUnmounted(() => {
 })
 function handleChange(e: any) {
   console.log(e)
-  if(e.fileList.length>0){
-    const fileList:File[] = e.fileList.map((item:any)=>{
+  if (e.fileList.length > 0) {
+    const fileList: File[] = e.fileList.map((item: any) => {
       return item.file
     })
     sendFileMsg(fileList)
@@ -350,68 +350,80 @@ function handleChange(e: any) {
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full" :class="wrapClass">
-    <main class="flex-1 overflow-hidden">
-      <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
-        <div v-if="!isMobile" class="flex w-full p-4">
+  
+    <div class="flex flex-col w-full h-full" :class="wrapClass">
+     
+      <main class="flex-1 overflow-hidden">
+        <n-spin :show="show">
+        <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
+          <div v-if="!isMobile" class="flex w-full p-4">
 
-          <SearchBox />
-        </div>
+            <SearchBox />
+          </div>
 
-        <div id="image-wrapper" class="w-full max-w-screen-xl m-auto" :class="[isMobile ? 'p-2' : 'p-4']">
-          <template v-if="!dataSources.length">
-            <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
-              <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
-              <span>Aha~</span>
-            </div>
-          </template>
-          <template v-else>
-            <div>
-              <Message v-for="(item, index) of dataSources" :key="index" :msg-type="item.msgType" :date-time="item.dateTime" :text="item.text" :href="item.href" :download="item.download"
-                :inversion="item.inversion" :error="item.error" :loading="item.loading" :all-data="item" @regenerate="onRegenerate(index)"
-                @delete="handleDelete(index)" />
-              <div class="sticky bottom-0 left-0 flex justify-center">
-                <NButton v-if="loading" type="warning" @click="handleStop">
-                  <template #icon>
-                    <SvgIcon icon="ri:stop-circle-line" />
-                  </template>
-                  Stop Responding
-                </NButton>
+          <div id="image-wrapper" class="w-full max-w-screen-xl m-auto" :class="[isMobile ? 'p-2' : 'p-4']">
+            <template v-if="!dataSources.length">
+              <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
+                <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
+                <span>Aha~</span>
               </div>
-            </div>
-          </template>
-        </div>
-      </div>
-    </main>
-    <footer :class="footerClass">
-      <div class="w-full max-w-screen-xl m-auto">
-        <div class="flex items-center justify-between space-x-2">
-          <HoverButton>
-            <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
-              <span class="text-xl text-[#4f555e] dark:text-white">
-                <SvgIcon icon="material-symbols:upload-sharp" />
-              </span>
-            </n-upload>
-            <!-- <span class="text-xl text-[#4f555e] dark:text-white">
-                  <SvgIcon icon="material-symbols:upload-sharp" />
-                </span> -->
-          </HoverButton>
-          <HoverButton @click="handleExport">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
-            </span>
-          </HoverButton>
-          <NInput v-model:value="prompt" type="textarea" :autosize="{ minRows: 1, maxRows: 2 }" :placeholder="placeholder"
-            @keypress="handleEnter" />
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-            <template #icon>
-              <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
-              </span>
             </template>
-          </NButton>
+            <template v-else>
+              <div>
+                <Message v-for="(item, index) of dataSources" :key="index" :msg-type="item.msgType"
+                  :date-time="item.dateTime" :text="item.text" :href="item.href" :download="item.download"
+                  :inversion="item.inversion" :error="item.error" :loading="item.loading" :all-data="item"
+                  @regenerate="onRegenerate(index)" @delete="handleDelete(index)" />
+                <div class="sticky bottom-0 left-0 flex justify-center">
+                  <NButton v-if="loading" type="warning" @click="handleStop">
+                    <template #icon>
+                      <SvgIcon icon="ri:stop-circle-line" />
+                    </template>
+                    Stop Responding
+                  </NButton>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
-      </div>
-    </footer>
-  </div>
+        <template #description>
+      正在创建，请稍后...
+    </template>
+  </n-spin>
+      </main>
+
+  
+
+      <footer :class="footerClass">
+        <div class="w-full max-w-screen-xl m-auto">
+          <div class="flex items-center justify-between space-x-2">
+            <HoverButton>
+              <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="material-symbols:upload-sharp" />
+                </span>
+              </n-upload>
+              <!-- <span class="text-xl text-[#4f555e] dark:text-white">
+                    <SvgIcon icon="material-symbols:upload-sharp" />
+                  </span> -->
+            </HoverButton>
+            <HoverButton @click="handleExport">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="ri:download-2-line" />
+              </span>
+            </HoverButton>
+            <NInput v-model:value="prompt" type="textarea" :autosize="{ minRows: 1, maxRows: 2 }"
+              :placeholder="placeholder" @keypress="handleEnter" />
+            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+              <template #icon>
+                <span class="dark:text-black">
+                  <SvgIcon icon="ri:send-plane-fill" />
+                </span>
+              </template>
+            </NButton>
+          </div>
+        </div>
+      </footer>
+    </div>
+
 </template>

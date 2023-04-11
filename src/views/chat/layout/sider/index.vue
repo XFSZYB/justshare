@@ -1,28 +1,27 @@
 <script setup lang='ts'>
 import type { CSSProperties } from 'vue'
 import { computed, watch, ref } from 'vue'
-import { NButton, NLayoutSider, NInput, NInputGroup, NSpin } from 'naive-ui'
+import { NButton, NLayoutSider, NInput, NInputGroup,} from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore, useConnectStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { initConnect, createRoom, joinRoom } from '../../../../connect'
 // import { requestToSignin, fetchInitialRoomList } from '../../../../api'
 
 const appStore = useAppStore()
-const chatStore = useChatStore()
+// const chatStore = useChatStore()
+const connectStore = useConnectStore()
 const chatName = ref('New Chat')
-const show = ref(false)
+
+// const show = ref(false)
 const { isMobile } = useBasicLayout()
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
-function changeStatus(flag: boolean) {
-  show.value = flag
-}
 
 function handleAdd() {
-  changeStatus(true)
+  connectStore.setCreateRoomLoading(true)
   // const uuid = Date.now()
   // chatStore.addHistory({ title: chatName.value, uuid , isEdit: false })
   createRoom(chatName.value)
@@ -64,7 +63,9 @@ watch(
 </script>
 
 <template>
-  <n-spin :show="show">
+  <!-- <n-space > -->
+
+  <!-- <n-spin :show="show"> -->
     <NLayoutSider :collapsed="collapsed" :collapsed-width="0" :width="260"
       :show-trigger="isMobile ? false : 'arrow-circle'" collapse-mode="transform" position="absolute" bordered
       :style="getMobileClass" @update-collapsed="handleUpdateCollapsed">
@@ -78,8 +79,8 @@ watch(
               </n-button>
             </n-input-group>
             <!-- <NButton dashed block @click="handleAdd">
-                New chat
-              </NButton> -->
+                    New chat
+                  </NButton> -->
           </div>
           <div class="flex-1 min-h-0 pb-4 overflow-hidden">
             <List />
@@ -89,11 +90,10 @@ watch(
       </div>
     </NLayoutSider>
 
-    <template #description>
-      正在创建，请稍后...
+
+    <template v-if="isMobile">
+      <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
     </template>
-  </n-spin>
-  <template v-if="isMobile">
-    <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
-  </template>
+  <!-- </n-spin> -->
+  <!-- </n-space> -->
 </template>

@@ -21,7 +21,7 @@ let _handleLeaveRoomSuccess: ((payload: LeaveRoomSuccessPayload) => void) | unde
 let _handleNewPeerLeaved: ((payload: NewPeerLeavePayload) => void) | undefined;
 let _handleNewPassthroughArival: ((payload: IncomingPassthrough) => void) | undefined;
 let _handleNewPeerArivalInternally: ((payload: NewPeerArivalPayload) => void) | undefined;
-
+let _handleUnauthorized: ((payload: any) => void) | undefined;
 function _handleSocketOpen(event: Event) {
   console.debug("WebRTCGroupChatService: websocket connected");
   // external usage
@@ -44,6 +44,14 @@ function _handleSocketPing() {
     return;
   }
   SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.PONG);
+}
+
+function _handleSocketUnauthorized(payload: any) {
+  console.debug("Unauthorized");
+  // external usage
+  if (_handleUnauthorized) {
+    _handleUnauthorized(payload);
+  }
 }
 
 function _handleSocketUpdateRooms(payload: UpdateRoomsPayload) {
@@ -104,6 +112,11 @@ function _connect() {
   }
 
   SocketManager.createSocket(_webSocketUrl, _handleSocketOpen, _handleSocketClose);
+  SocketManager.registerMessageEvent(
+    _webSocketUrl,
+    _SignalType.UNAUTHORIZED,
+    _handleSocketUnauthorized
+  );
   SocketManager.registerMessageEvent(_webSocketUrl, _SignalType.PING, _handleSocketPing);
   SocketManager.registerMessageEvent(
     _webSocketUrl,
@@ -227,6 +240,9 @@ export default {
   },
   onWebSocketClose: function (handler: EventListener) {
     _handleWebSocketClosed = handler;
+  },
+  onWebSocketUnauthorized: function (handle: (payload: any) => void) {
+    _handleUnauthorized = handle
   },
   onJoinRoomInSuccess: function (handler: (payload: JoinRoomSuccessPayload) => void) {
     _handleJoinRoomSuccess = handler;
