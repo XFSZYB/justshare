@@ -39,11 +39,11 @@ const fileText = ref<string[]>([''])
 
 
 const options = [
-  {
-    label: t('chat.copy'),
-    key: 'copyText',
-    icon: iconRender({ icon: 'ri:file-copy-2-line' }),
-  },
+  // {
+  //   label: t('chat.copy'),
+  //   key: 'copyText',
+  //   icon: iconRender({ icon: 'ri:file-copy-2-line' }),
+  // },
   {
     label: t('common.delete'),
     key: 'delete',
@@ -95,11 +95,11 @@ onMounted(() => {
         <TextComponent v-else ref="textRef" :inversion="inversion" :error="error" :text="text" :loading="loading" />
 
         <div class="flex flex-col">
-          <button v-if="!inversion"
+          <!-- <button v-if="!inversion"
             class="mb-2 transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300"
             @click="handleRegenerate">
             <SvgIcon icon="ri:restart-line" />
-          </button>
+          </button> -->
           <NDropdown :placement="!inversion ? 'right' : 'left'" :options="options" @select="handleSelect">
             <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200">
               <SvgIcon icon="ri:more-2-fill" />

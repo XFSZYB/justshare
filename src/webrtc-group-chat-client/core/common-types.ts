@@ -86,6 +86,9 @@ export interface ChatRooms {
 
 export interface UpdateRoomsPayload {
   rooms: ChatRooms;
+  type?:string,
+  roomId?:string,
+  roomName?:string,
 }
 
 export interface LeaveRoomSuccessPayload {

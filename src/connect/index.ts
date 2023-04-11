@@ -167,6 +167,12 @@ GroupChatService.onWebSocketOpen((payload) => {
 })
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
+    const type = payload.type;
+    const roomId =payload.roomId
+    const roomName = payload.roomName
+    if(type==='create'){
+        updateChatStore().addHistory({ title: roomName || '', uuid:roomId || '' , isEdit: false })
+    }
     if (rooms) {
         // console.warn('onRoomsInfoUpdated===>', rooms)
         updateConnectStore().setRoomList(rooms)
