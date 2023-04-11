@@ -168,7 +168,7 @@ GroupChatService.onWebSocketOpen((payload) => {
 GroupChatService.onRoomsInfoUpdated((payload) => {
     const rooms = payload.rooms;
     if (rooms) {
-        console.warn('onRoomsInfoUpdated===>', rooms)
+        // console.warn('onRoomsInfoUpdated===>', rooms)
         updateConnectStore().setRoomList(rooms)
         //   store.dispatch(updateRoomList(rooms));
     }
@@ -274,7 +274,7 @@ GroupChatService.onPeersInfoChanged((peersInfo) => {
 
 GroupChatService.onFileSendingRelatedDataChanged(
     (sendingRelatedDataProxy, isSendingStatusSending) => {
-        console.warn('onFileSendingRelatedDataChanged===>', sendingRelatedDataProxy, isSendingStatusSending)
+        // console.warn('onFileSendingRelatedDataChanged===>', sendingRelatedDataProxy, isSendingStatusSending)
         if (isSendingStatusSending !== undefined) {
             // setIsSendingStatusSending(isSendingStatusSending);
         }
@@ -291,15 +291,15 @@ GroupChatService.onFileSendingRelatedDataChanged(
                 messageItem.fileSize >= 0;
             const isFileProgressCompleted =
                 isFileProgressValid && messageItem.fileProgress >= messageItem.fileSize;
-            console.warn('--sendFileMsg--', newMessageContainer)
+            // console.warn('--sendFileMsg--', newMessageContainer)
             if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(+updateConnectStore().currentUUID, messageItem.id)) {
-                console.warn('????')
+                // console.warn('????')
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
-                        text: `文件名：${messageItem.fileName} \n文件大小： ${formatBytes(messageItem.fileSize)}`,
+                        text: `文件名：${messageItem.fileName} \n文件大小： ${formatBytes(messageItem.fileSize)} \n正在发送中...`,
                         // msgType: 'file',
                         inversion: true,
                         error: false,
@@ -310,7 +310,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
                     },
                 )
             } else if (isFileProgressCompleted) {
-                console.warn('!!!!')
+                // console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
                     +updateConnectStore().currentUUID,
                     messageItem.id,
@@ -335,7 +335,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
 );
 GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) => {
     if (receivingRelatedDataProxy && receivingRelatedDataProxy.peerMapOfHashToAllSlices) {
-        console.warn('==onFileReceivingRelatedDataChanged==', receivingRelatedDataProxy)
+        // console.warn('==onFileReceivingRelatedDataChanged==', receivingRelatedDataProxy)
         const userId = updateConnectStore().userId
         const userName = updateConnectStore().userName
 
@@ -345,7 +345,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
             false,
             receivingRelatedDataProxy.peerMapOfHashToAllSlices
         );
-        console.warn('--recFileMsg--', newMessageContainer)
+        // console.warn('--recFileMsg--', newMessageContainer)
         let messageItem: any = { ...newMessageContainer }
 
         const isFileProgressValid =
@@ -358,7 +358,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
 
         if (isFileExporterCallable) {
             const handleFileExportSuccess = (file: any) => {
-                console.warn('======file=====', file)
+                // console.warn('======file=====', file)
                 if (file === undefined) {
                     alert("This cached file has been deleted, please let your peer send it again");
                     return;
@@ -374,7 +374,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
 
                 a.href = window.URL.createObjectURL(file);
                 a.download = messageItem.fileName;
-                console.warn('===tagA====', a)
+                // console.warn('===tagA====', a)
                 messageItem = { ...messageItem, ...a }
                 updateChatStore().addChatByUuid(
                     +updateConnectStore().currentUUID,
@@ -390,7 +390,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
                     },
                 )
             };
-            console.warn('===hello====')
+            // console.warn('===hello====')
             messageItem.fileExporter().then(handleFileExportSuccess).catch((e: any) => { console.error(e) });
         }
 

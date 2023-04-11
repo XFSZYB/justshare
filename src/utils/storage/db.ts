@@ -105,11 +105,8 @@ export class chatHistoryDb implements chatData {
              
             });
 
-
-
-
         } catch (e) {
-            console.error(e)
+            // console.error(e)
         }
 
     }
