@@ -6,7 +6,7 @@ import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useChatStore, useConnectStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { initConnect, createRoom, joinRoom } from '../../../../connect'
+import {  createRoom, } from '../../../../connect'
 // import { requestToSignin, fetchInitialRoomList } from '../../../../api'
 
 const appStore = useAppStore()

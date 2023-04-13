@@ -167,11 +167,14 @@ GroupChatService.onWebSocketOpen((payload) => {
     console.log('onWebSocketOpen===>', payload)
     // if (payload.type === 'open') {
     const currentUUID = useConnectStore().currentUUID
-    joinRoom(currentUUID)
+    if(currentUUID){
+        joinRoom(currentUUID)
+    }
+    
     // }
 
 })
-
+// https://uuasd1.bond/
 GroupChatService.onWebSocketClose((payload) => {
     console.warn('payload===>', payload)
 })

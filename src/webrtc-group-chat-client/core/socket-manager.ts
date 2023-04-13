@@ -116,7 +116,7 @@ function _registerMessageEvent(
     const messageEvent = event as MessageEvent;
 
     const parsedData = JSON.parse(messageEvent.data);
-    console.warn('parsedData===>',parsedData)
+    // console.warn('parsedData===>',parsedData)
     const type = parsedData.type;
     const payload = parsedData.payload;
     if (regisType !== type) {

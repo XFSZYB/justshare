@@ -4,8 +4,6 @@ import { NInput, NPopconfirm, NScrollbar } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-// import { initConnect, createRoom, joinRoom } from '../../../../connect'
-// import { requestToSignin, fetchInitialRoomList } from '../../../../api'
 
 const { isMobile } = useBasicLayout()
 
@@ -44,7 +42,7 @@ function handleEnter({ uuid }: Chat.History, isEdit: boolean, event: KeyboardEve
    
 }
 
-function isActive(uuid: number) {
+function isActive(uuid: string) {
   return chatStore.active === uuid
 }
 </script>

@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-// import { useRoute } from 'vue-router'
-import { NButton, NInput, useDialog, useMessage, NUpload, NSpin, NSpace } from 'naive-ui'
+import { useRoute ,useRouter} from 'vue-router'
+import { NButton, NInput, useDialog, useMessage, NUpload, NSpin } from 'naive-ui'
 // import type { UploadInst, UploadFileInfo } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message, SearchBox } from './components'
@@ -14,18 +14,42 @@ import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import { initConnect } from '../../connect'
-import { fetchInitialRoomList } from '../../api'
+import { fetchInitialRoomList, requestToSignin,fetchMyRoomIds } from '../../api'
 import { sendTextMsg, sendFileMsg } from '@/connect'
-// import GroupChatService from "../../webrtc-group-chat-client";
 
 let controller = new AbortController()
 const connectStore = useConnectStore()
+const ms = useMessage()
+// const route = useRoute()
+const router = useRouter()
 const show = computed(() => connectStore.createRoomLoading)
 const resData = async () => {
   const userData: any = JSON.parse(localStorage.getItem('userData') || '{}')
+  const verifyLogin: any = await requestToSignin(userData.name, userData.passwd)
+  if (!verifyLogin.payload) {
+    ms.error('未知错误')
+    return
+  }
+  if (verifyLogin.payload.msg) {
+    ms.error(verifyLogin.payload.msg)
+    if(verifyLogin.payload.msg==='not find user'){
+      router.replace('/signIn')
+      return 
+    }
+    return
+  }
   connectStore.setUserId(userData.id)
   connectStore.setUserName(userData.name)
   initConnect(userData.id, userData.name)
+  const myRooms:any = await fetchMyRoomIds(userData.id)
+  if (!myRooms.payload) {
+    ms.error('未知错误')
+    return
+  }
+  if (myRooms.payload.msg) {
+    ms.error(myRooms.payload.msg)
+    return
+  }
   const roomListRes: any = await fetchInitialRoomList('')
   if (roomListRes.status === 'Success') {
     console.log('roomListRes==>', roomListRes)
@@ -34,9 +58,9 @@ const resData = async () => {
 
 }
 // resData()
-// const route = useRoute()
+
 const dialog = useDialog()
-const ms = useMessage()
+
 
 const chatStore = useChatStore()
 chatStore.getHistory()
@@ -151,7 +175,7 @@ async function onRegenerate(index: number) {
         try {
           const data = JSON.parse(chunk)
           updateChat(
-            +uuid,
+            uuid,
             index,
             {
               dateTime: new Date().toLocaleString(),
@@ -173,7 +197,7 @@ async function onRegenerate(index: number) {
   catch (error: any) {
     if (error.message === 'canceled') {
       updateChatSome(
-        +uuid,
+        uuid,
         index,
         {
           loading: false,
@@ -185,7 +209,7 @@ async function onRegenerate(index: number) {
     const errorMessage = error?.message ?? t('common.wrong')
 
     updateChat(
-      +uuid,
+      uuid,
       index,
       {
         dateTime: new Date().toLocaleString(),
@@ -253,7 +277,7 @@ function handleDelete(index: number) {
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
     onPositiveClick: () => {
-      chatStore.deleteChatByUuid(+uuid, index)
+      chatStore.deleteChatByUuid(uuid, index)
     },
   })
 }
@@ -270,7 +294,7 @@ function handleClear() {
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
     onPositiveClick: () => {
-      chatStore.clearChatByUuid(+uuid)
+      chatStore.clearChatByUuid(uuid)
     },
   })
 }
@@ -350,11 +374,10 @@ function handleChange(e: any) {
 </script>
 
 <template>
-  
-    <div class="flex flex-col w-full h-full" :class="wrapClass">
-     
-      <main class="flex-1 overflow-hidden">
-        <n-spin :show="show">
+  <div class="flex flex-col w-full h-full" :class="wrapClass">
+
+    <main class="flex-1 overflow-hidden">
+      <n-spin :show="show">
         <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
           <div v-if="!isMobile" class="flex w-full p-4">
 
@@ -387,43 +410,42 @@ function handleChange(e: any) {
           </div>
         </div>
         <template #description>
-      正在创建，请稍后...
-    </template>
-  </n-spin>
-      </main>
+          正在创建，请稍后...
+        </template>
+      </n-spin>
+    </main>
 
-  
 
-      <footer :class="footerClass">
-        <div class="w-full max-w-screen-xl m-auto">
-          <div class="flex items-center justify-between space-x-2">
-            <HoverButton>
-              <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
-                <span class="text-xl text-[#4f555e] dark:text-white">
-                  <SvgIcon icon="material-symbols:upload-sharp" />
-                </span>
-              </n-upload>
-              <!-- <span class="text-xl text-[#4f555e] dark:text-white">
-                    <SvgIcon icon="material-symbols:upload-sharp" />
-                  </span> -->
-            </HoverButton>
-            <HoverButton @click="handleExport">
+
+    <footer :class="footerClass">
+      <div class="w-full max-w-screen-xl m-auto">
+        <div class="flex items-center justify-between space-x-2">
+          <HoverButton>
+            <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
               <span class="text-xl text-[#4f555e] dark:text-white">
-                <SvgIcon icon="ri:download-2-line" />
+                <SvgIcon icon="material-symbols:upload-sharp" />
               </span>
-            </HoverButton>
-            <NInput v-model:value="prompt" type="textarea" :autosize="{ minRows: 1, maxRows: 2 }"
-              :placeholder="placeholder" @keypress="handleEnter" />
-            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-              <template #icon>
-                <span class="dark:text-black">
-                  <SvgIcon icon="ri:send-plane-fill" />
-                </span>
-              </template>
-            </NButton>
-          </div>
+            </n-upload>
+            <!-- <span class="text-xl text-[#4f555e] dark:text-white">
+                        <SvgIcon icon="material-symbols:upload-sharp" />
+                      </span> -->
+          </HoverButton>
+          <HoverButton @click="handleExport">
+            <span class="text-xl text-[#4f555e] dark:text-white">
+              <SvgIcon icon="ri:download-2-line" />
+            </span>
+          </HoverButton>
+          <NInput v-model:value="prompt" type="textarea" :autosize="{ minRows: 1, maxRows: 2 }" :placeholder="placeholder"
+            @keypress="handleEnter" />
+          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+            <template #icon>
+              <span class="dark:text-black">
+                <SvgIcon icon="ri:send-plane-fill" />
+              </span>
+            </template>
+          </NButton>
         </div>
-      </footer>
-    </div>
-
+      </div>
+    </footer>
+  </div>
 </template>

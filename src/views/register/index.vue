@@ -68,7 +68,7 @@ function handlePress(event: KeyboardEvent) {
         <NInput v-model:value="token" type="text" placeholder="请输入名称" @keypress="handlePress" />
         <NInput v-model:value="token" type="text" placeholder="请输入密码" @keypress="handlePress" />
         <NInput v-model:value="token" type="text" placeholder="请再次输入密码" @keypress="handlePress" />
-        <NInput v-model:value="token" type="text" placeholder="请填写邮箱用于找回密码" @keypress="handlePress" />
+        <!-- <NInput v-model:value="token" type="text" placeholder="请填写邮箱用于找回密码" @keypress="handlePress" /> -->
         <NButton
           block
           type="primary"

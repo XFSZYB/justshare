@@ -1,6 +1,9 @@
 declare namespace Chat {
 
 	interface Chat {
+		msgType?: string
+		href?: string
+		download?: string
 		dateTime: string
 		text: string
 		inversion?: boolean

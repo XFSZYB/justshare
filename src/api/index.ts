@@ -49,10 +49,17 @@ export function fetchVerify<T>(token: string) {
   })
 }
 
-export async function requestToSignin<T>(userName: string) {
+export async function requestToRegister<T>(userName: string,passwd:string) {
+  return await post<T>({
+   url: '/api/register',
+   data: { userName,passwd },
+ })
+}
+
+export async function requestToSignin<T>(userName: string,passwd:string) {
    return await post<T>({
     url: '/api/login',
-    data: { userName },
+    data: { userName,passwd },
   })
 }
 
@@ -61,5 +68,13 @@ export function fetchInitialRoomList<T>(groupId: string) {
     url: '/api/rooms',
     data: { groupId },
   })
+}
+
+export function fetchMyRoomIds<T>(userid:string){
+  return get<T>({
+    url: '/api/myroomids',
+    data: { userid },
+  })
+
 }
 
