@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute ,useRouter} from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { NButton, NInput, useDialog, useMessage, NUpload, NSpin } from 'naive-ui'
 // import type { UploadInst, UploadFileInfo } from 'naive-ui'
 import html2canvas from 'html2canvas'
@@ -13,8 +13,8 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
-import { initConnect } from '../../connect'
-import { fetchInitialRoomList, requestToSignin,fetchMyRoomIds } from '../../api'
+import { initConnect, joinRoom } from '../../connect'
+import { fetchInitialRoomList, requestToSignin, fetchMyRoomIds } from '../../api'
 import { sendTextMsg, sendFileMsg } from '@/connect'
 
 let controller = new AbortController()
@@ -32,16 +32,16 @@ const resData = async () => {
   }
   if (verifyLogin.payload.msg) {
     ms.error(verifyLogin.payload.msg)
-    if(verifyLogin.payload.msg==='not find user'){
+    if (verifyLogin.payload.msg === 'not find user') {
       router.replace('/signIn')
-      return 
+      return
     }
     return
   }
   connectStore.setUserId(userData.id)
   connectStore.setUserName(userData.name)
   initConnect(userData.id, userData.name)
-  const myRooms:any = await fetchMyRoomIds(userData.id)
+  const myRooms: any = await fetchMyRoomIds(userData.id)
   if (!myRooms.payload) {
     ms.error('未知错误')
     return
@@ -51,6 +51,9 @@ const resData = async () => {
     return
   }
   connectStore.setRoomIds(myRooms.payload.roomIds)
+  myRooms.payload.roomIds.forEach((item: any) => {
+    joinRoom(item.uuid)
+  })
   const roomListRes: any = await fetchInitialRoomList('')
   if (roomListRes.status === 'Success') {
     console.log('roomListRes==>', roomListRes)
@@ -85,7 +88,7 @@ function handleSubmit() {
   onConversation()
 }
 async function onConversation() {
-  sendTextMsg(prompt.value)
+  sendTextMsg(JSON.stringify({msg: prompt.value ,roomId: connectStore.currentUUID}))
   // GroupChatService.sendChatMessageToAllPeer(prompt.value);  
   const userId = connectStore.userId
   const userName = connectStore.userName
@@ -378,7 +381,7 @@ function handleChange(e: any) {
   <div class="flex flex-col w-full h-full" :class="wrapClass">
 
     <main class="flex-1 overflow-hidden">
-      <n-spin :show="show">
+      <!-- <n-spin :show="show"> -->
         <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
           <div v-if="!isMobile" class="flex w-full p-4">
 
@@ -410,10 +413,10 @@ function handleChange(e: any) {
             </template>
           </div>
         </div>
-        <template #description>
+        <!-- <template #description>
           正在创建，请稍后...
         </template>
-      </n-spin>
+      </n-spin> -->
     </main>
 
 
@@ -428,8 +431,8 @@ function handleChange(e: any) {
               </span>
             </n-upload>
             <!-- <span class="text-xl text-[#4f555e] dark:text-white">
-                        <SvgIcon icon="material-symbols:upload-sharp" />
-                      </span> -->
+                          <SvgIcon icon="material-symbols:upload-sharp" />
+                        </span> -->
           </HoverButton>
           <HoverButton @click="handleExport">
             <span class="text-xl text-[#4f555e] dark:text-white">

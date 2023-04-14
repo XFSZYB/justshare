@@ -74,6 +74,7 @@ function _sendChatMessageToAllPeer(peerConnectionMap: PeerConnectionMap, message
     console.debug(`WebRTCGroupChatService: unexpected message during chat messaging`, message);
     return;
   }
+  // console.log('peerConnectionMap',peerConnectionMap)
   peerConnectionMap.forEach((peerConnection, peerId) => {
     _sendChatMessageToPeer(message, peerId, peerConnection);
   });

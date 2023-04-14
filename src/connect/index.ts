@@ -257,6 +257,8 @@ GroupChatService.onChatMessageReceived((message) => {
         userName: "unknown user name",
         text: "unknown message",
     };
+    let uuid = updateConnectStore().currentUUID
+
     if (message && typeof message.peerId === "string") {
         defaultMessage.userId = message.peerId;
     }
@@ -264,9 +266,16 @@ GroupChatService.onChatMessageReceived((message) => {
         defaultMessage.userName = message.peerName;
     }
     if (message && typeof message.text === "string") {
-        defaultMessage.text = message.text;
+        defaultMessage.text = '';
+        try{
+            const msgData = JSON.parse(message.text)
+            defaultMessage.text = msgData.msg
+            uuid = msgData.roomId
+        }catch(e){
+    
+        }
     }
-
+     
     const timestamp = (new Date()).getTime();
     const id = `${defaultMessage.userId}-${timestamp}`;
     const textMessage = {
@@ -281,7 +290,7 @@ GroupChatService.onChatMessageReceived((message) => {
     };
 
     updateChatStore().addChatByUuid(
-        updateConnectStore().currentUUID,
+        uuid,
         {
             ...textMessage,
             dateTime: new Date().toLocaleString(),
