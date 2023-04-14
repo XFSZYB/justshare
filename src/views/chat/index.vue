@@ -369,8 +369,10 @@ function handleChange(e: any) {
   console.log(e)
   if (e.fileList.length > 0) {
     const fileList: File[] = e.fileList.map((item: any) => {
+      item.file.roomId = connectStore.currentUUID
       return item.file
     })
+    console.log('fileList====>',fileList)
     sendFileMsg(fileList)
   }
 

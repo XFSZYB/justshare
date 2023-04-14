@@ -3,6 +3,7 @@ import {
   IncomingPassthrough,
   NewPeerArivalPayload,
   JoinRoomSuccessPayload,
+  InviteUserJoinRoomPayload,
   UpdateRoomsPayload,
   LeaveRoomSuccessPayload,
   _SignalType,
@@ -15,6 +16,7 @@ let _handleWebSocketOpened: EventListener | undefined;
 let _handleWebSocketClosed: EventListener | undefined;
 
 let _handleJoinRoomSuccess: ((payload: JoinRoomSuccessPayload) => void) | undefined;
+let _handleInviteUserJoinRoomRes: ((payload: InviteUserJoinRoomPayload) => void) | undefined;
 let _handleRoomsUpdated: ((payload: UpdateRoomsPayload) => void) | undefined;
 let _handleLeaveRoomSuccess: ((payload: LeaveRoomSuccessPayload) => void) | undefined;
 
@@ -69,6 +71,13 @@ function _handleSocketJoinRoomSuccess(payload: JoinRoomSuccessPayload) {
     _handleJoinRoomSuccess(payload);
   }
 }
+function _handleSocketInviteUserJoinRoomRes(payload: InviteUserJoinRoomPayload) {
+
+  if (_handleInviteUserJoinRoomRes) {
+    _handleInviteUserJoinRoomRes(payload)
+  }
+}
+
 
 function _handleSocketLeaveRoomSuccess(payload: LeaveRoomSuccessPayload) {
   console.debug("WebRTCGroupChatService: LEAVE_ROOM_SUCCESS signal received");
@@ -130,6 +139,11 @@ function _connect() {
   );
   SocketManager.registerMessageEvent(
     _webSocketUrl,
+    _SignalType.INVITE_USER_JOIN_ROOM_RES,
+    _handleSocketInviteUserJoinRoomRes
+  );
+  SocketManager.registerMessageEvent(
+    _webSocketUrl,
     _SignalType.LEAVE_ROOM_SUCCESS,
     _handleSocketLeaveRoomSuccess
   );
@@ -179,6 +193,17 @@ function _joinRoomSignaling(roomId: string) {
   });
 }
 
+function _inviteUserJoinRoomSignaling(userId: string, roomAdmin: string, roomId: string) {
+  if (!_webSocketUrl || _webSocketUrl.length === 0 || roomId.length === 0 || userId.length === 0 || roomAdmin.length === 0) {
+    return;
+  }
+  SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.JOIN_ROOM, {
+    roomId: roomId,
+    userId: userId,
+    roomAdmin: roomAdmin
+  });
+}
+
 function _leaveRoomSignaling() {
   if (!_webSocketUrl || _webSocketUrl.length === 0) {
     return;
@@ -219,6 +244,9 @@ export default {
   joinRoomSignaling: function (roomId: string) {
     _joinRoomSignaling(roomId);
   },
+  inviteUserJoinRoomSignaling: function (userId: string, roomAdmin: string, roomId: string) {
+    _inviteUserJoinRoomSignaling(userId, roomAdmin, roomId);
+  },
   leaveRoomSignaling: function () {
     _leaveRoomSignaling();
   },
@@ -246,6 +274,9 @@ export default {
   },
   onJoinRoomInSuccess: function (handler: (payload: JoinRoomSuccessPayload) => void) {
     _handleJoinRoomSuccess = handler;
+  },
+  onInviteUserJoinRoomRes: function (handler: (payload: InviteUserJoinRoomPayload) => void) {
+    _handleInviteUserJoinRoomRes = handler
   },
   onRoomsInfoUpdated: function (handler: (payload: UpdateRoomsPayload) => void) {
     _handleRoomsUpdated = handler;

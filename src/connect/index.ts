@@ -65,6 +65,7 @@ const fileMessageContainerBuilder = (
             };
             newFileMessage.fileName = newFileMetaData.name;
             newFileMessage.fileSize = newFileMetaData.size;
+            newFileMessage.roomId = newFileMetaData.roomId
 
             newFileMessage.isRead = true;
             newFileMessage.isNew = false;
@@ -105,7 +106,7 @@ const fileMessageContainerBuilder = (
             };
             newFileMessage.fileName = newFileMetaData.name;
             newFileMessage.fileSize = newFileMetaData.size;
-
+            newFileMessage.roomId = newFileMetaData.roomId
             newFileMessage.isRead = false;
             newFileMessage.isNew = true;
 
@@ -313,7 +314,7 @@ GroupChatService.onPeersInfoChanged((peersInfo) => {
 
 GroupChatService.onFileSendingRelatedDataChanged(
     (sendingRelatedDataProxy, isSendingStatusSending) => {
-        // console.warn('onFileSendingRelatedDataChanged===>', sendingRelatedDataProxy, isSendingStatusSending)
+        console.warn('onFileSendingRelatedDataChanged===>', sendingRelatedDataProxy, isSendingStatusSending)
         if (isSendingStatusSending !== undefined) {
             // setIsSendingStatusSending(isSendingStatusSending);
         }
@@ -334,7 +335,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(updateConnectStore().currentUUID, messageItem.id)) {
                 // console.warn('????')
                 updateChatStore().addChatByUuid(
-                    updateConnectStore().currentUUID,
+                    messageItem.roomId ||  updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
@@ -351,7 +352,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             } else if (isFileProgressCompleted) {
                 // console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
-                    updateConnectStore().currentUUID,
+                    messageItem.roomId ||  updateConnectStore().currentUUID,
                     messageItem.id,
                     {
                         ...messageItem,
@@ -384,7 +385,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
             false,
             receivingRelatedDataProxy.peerMapOfHashToAllSlices
         );
-        // console.warn('--recFileMsg--', newMessageContainer)
+        console.warn('--recFileMsg--', receivingRelatedDataProxy)
         let messageItem: any = { ...newMessageContainer }
 
         const isFileProgressValid =
@@ -416,7 +417,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
                 // console.warn('===tagA====', a)
                 messageItem = { ...messageItem, ...a }
                 updateChatStore().addChatByUuid(
-                    updateConnectStore().currentUUID,
+                    messageItem.roomId ||  updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),

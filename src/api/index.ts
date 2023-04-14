@@ -1,5 +1,5 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
-import { post,get } from '@/utils/request'
+import { post, get } from '@/utils/request'
 
 
 export function fetchChatAPI<T = any>(
@@ -49,17 +49,17 @@ export function fetchVerify<T>(token: string) {
   })
 }
 
-export async function requestToRegister<T>(userName: string,passwd:string) {
+export async function requestToRegister<T>(userName: string, passwd: string) {
   return await post<T>({
-   url: '/api/register',
-   data: { userName,passwd },
- })
+    url: '/api/register',
+    data: { userName, passwd },
+  })
 }
 
-export async function requestToSignin<T>(userName: string,passwd:string) {
-   return await post<T>({
+export async function requestToSignin<T>(userName: string, passwd: string) {
+  return await post<T>({
     url: '/api/login',
-    data: { userName,passwd },
+    data: { userName, passwd },
   })
 }
 
@@ -70,10 +70,18 @@ export function fetchInitialRoomList<T>(groupId: string) {
   })
 }
 
-export function fetchMyRoomIds<T>(userid:string){
+export function fetchMyRoomIds<T>(userid: string) {
   return get<T>({
     url: '/api/myroomids',
     data: { userid },
+  })
+
+}
+
+export function inviteUser<T>(roomAdmin: string, userId: string, roomId: string) {
+  return get<T>({
+    url: '/api/invite',
+    data: { roomAdmin, userId, roomId },
   })
 
 }

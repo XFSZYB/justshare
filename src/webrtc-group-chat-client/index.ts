@@ -10,6 +10,7 @@ import type {
 
   ChatMessage,
   JoinRoomSuccessPayload,
+  InviteUserJoinRoomPayload,
   LeaveRoomSuccessPayload,
   LocalMediaContext,
   PeerMediaContextMapProxy,
@@ -77,8 +78,8 @@ export {
 };
 
 export default {
-  async fileCacheManager(userid:string,filehash:string){
-    return await FileCacheManager.getReceivFileData(userid,filehash)
+  async fileCacheManager(userid: string, filehash: string) {
+    return await FileCacheManager.getReceivFileData(userid, filehash)
   },
   set peerConnectionConfig(config: RTCConfiguration) {
     PeerConnectionManager.peerConnectionConfig = config;
@@ -98,17 +99,17 @@ export default {
     SignalingManager.webSocketUrl = webSocketUrl;
     SignalingManager.connect();
   },
-  onWebSocketOpen:function(handler:(payload:any)=>void){
+  onWebSocketOpen: function (handler: (payload: any) => void) {
     SignalingManager.onWebSocketOpen(handler)
   },
-  onWebSocketClose:function(handler:(payload:any)=>void){
+  onWebSocketClose: function (handler: (payload: any) => void) {
     SignalingManager.onWebSocketClose(handler)
   },
-  onWebSocketUnauthorized:function(handle:(payload:any)=>void){
+  onWebSocketUnauthorized: function (handle: (payload: any) => void) {
     SignalingManager.onWebSocketUnauthorized(handle)
   },
-  getConnectStatus:function(){
-    if(SignalingManager.webSocketUrl){
+  getConnectStatus: function () {
+    if (SignalingManager.webSocketUrl) {
       return true
     }
     return false
@@ -140,6 +141,9 @@ export default {
     _resetRTCRelatedState();
     SignalingManager.leaveRoomSignaling();
   },
+  onInviteUserJoinRoom: function (userId: string, roomAdmin: string, roomId: string) {
+    SignalingManager.inviteUserJoinRoomSignaling(userId, roomAdmin, roomId)
+  },
   // listeners
   onJoinRoomInSuccess: function (handler: (payload: JoinRoomSuccessPayload) => void) {
     SignalingManager.onJoinRoomInSuccess(handler);
@@ -149,6 +153,9 @@ export default {
   },
   onLeaveRoomInSuccess: function (handler: (payload: LeaveRoomSuccessPayload) => void) {
     SignalingManager.onLeaveRoomInSuccess(handler);
+  },
+  onInviteUserJoinRoomRes: function (handle: (payload: InviteUserJoinRoomPayload) => void) {
+    SignalingManager.onInviteUserJoinRoomRes(handle)
   },
 
   /**

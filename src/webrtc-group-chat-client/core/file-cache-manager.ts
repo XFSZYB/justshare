@@ -152,10 +152,11 @@ let _sendingHashToMetaData: FileHashToMeta = {};
 
 function _prepareSendingMetaData(hashToFile: FileHashToFile) {
   // _sendingHashToMetaData = { ..._sendingHashToMetaData };
-   console.warn('hashToFile===>',hashToFile)
+  console.warn('hashToFile===>', hashToFile)
   for (const [fileHash, file] of Object.entries(hashToFile)) {
-    console.warn('fileHash===>',fileHash,file)
+    console.warn('fileHash===>', fileHash, file)
     _sendingHashToMetaData[fileHash] = {
+      roomId: file.roomId,
       name: file.name,
       type: file.type,
       size: file.size,
@@ -505,7 +506,7 @@ function _scheduleAddBufferTask(
   );
 }
 
-function _resetReceivingBuffer(peerId: string, fileHash: string,deleteBuffer:boolean) {
+function _resetReceivingBuffer(peerId: string, fileHash: string, deleteBuffer: boolean) {
   if (!_IDBDatabasePromise) {
     console.error(
       `WebRTCGroupChatService: unfound IDB promise during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
@@ -520,7 +521,7 @@ function _resetReceivingBuffer(peerId: string, fileHash: string,deleteBuffer:boo
           `WebRTCGroupChatService: unfound IDB during resetting receiving buffer of a file (${fileHash}) for a peer (${peerId})`
         );
       }
-      _scheduleResetBufferTask(peerId, fileHash, IDBDatabase,deleteBuffer);
+      _scheduleResetBufferTask(peerId, fileHash, IDBDatabase, deleteBuffer);
     })
     .catch((error) => {
       console.error(error);
@@ -528,9 +529,9 @@ function _resetReceivingBuffer(peerId: string, fileHash: string,deleteBuffer:boo
 }
 
 // reset buffer list to an empty list of a file for a specific peer
-function _scheduleResetBufferTask(peerId: string, fileHash: string, IDBDatabase: IDBDatabase,deleteBuffer:boolean) {
+function _scheduleResetBufferTask(peerId: string, fileHash: string, IDBDatabase: IDBDatabase, deleteBuffer: boolean) {
   const resetIDBBufferTask = (fulFillment: IDBBufferPersistingPromiseFulfillment) => {
-    return _resetIDBReceivingBuffer(peerId, fileHash, IDBDatabase,deleteBuffer);
+    return _resetIDBReceivingBuffer(peerId, fileHash, IDBDatabase, deleteBuffer);
   };
   _receivingBufferIDBPersistingSchedulerMap.scheduleNextTask(peerId, fileHash, resetIDBBufferTask);
   console.debug(
@@ -1121,7 +1122,7 @@ function _resetIDBAllReceivingBuffers(IDBDatabase: IDBDatabase) {
   });
 }
 
-function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase: IDBDatabase,deleteBuffer:boolean) {
+function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase: IDBDatabase, deleteBuffer: boolean) {
   return new Promise<IDBBufferPersistingPromiseFulfillment>((resolve, reject) => {
     const transaction = IDBDatabase.transaction(_IDBReceivingBufferStoreName, "readwrite");
     const store = transaction.objectStore(_IDBReceivingBufferStoreName);
@@ -1142,7 +1143,7 @@ function _resetIDBReceivingBuffer(peerId: string, fileHash: string, IDBDatabase:
         );
         return;
       }
-      
+
       if (deleteBuffer && event.target.result instanceof IDBCursor) {
         const cursor = event.target.result;
         const request = store.delete(cursor.primaryKey);
@@ -1407,38 +1408,38 @@ export default {
   //
   // Receiving buffer persistence
   //
-   getReceivFileData(peerId: string, fileHash: string,){
-    return new Promise((resolve,reject)=>{
-    if (!_IDBDatabasePromise) {
-    console.error(
-      `WebRTCGroupChatService: unfound IDB promise during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
-    );
-    resolve(null)
-    return;
-  }
-
-  _IDBDatabasePromise
-    .then((IDBDatabase) => {
-      if (!IDBDatabase) {
-        throw new Error(
-          `WebRTCGroupChatService: unfound IDB during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+  getReceivFileData(peerId: string, fileHash: string,) {
+    return new Promise((resolve, reject) => {
+      if (!_IDBDatabasePromise) {
+        console.error(
+          `WebRTCGroupChatService: unfound IDB promise during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
         );
+        resolve(null)
+        return;
       }
-      resolve(_getIDBReceivingFile(peerId, fileHash, IDBDatabase));
-      return
+
+      _IDBDatabasePromise
+        .then((IDBDatabase) => {
+          if (!IDBDatabase) {
+            throw new Error(
+              `WebRTCGroupChatService: unfound IDB during adding receiving buffer of a file (${fileHash}) for a peer (${peerId})`
+            );
+          }
+          resolve(_getIDBReceivingFile(peerId, fileHash, IDBDatabase));
+          return
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     })
-    .catch((error) => {
-      console.error(error);
-    });
-    })
-  
+
 
   },
   addReceivingBuffer(peerId: string, fileHash: string, buffer: ArrayBuffer) {
     _addReceivingBuffer(peerId, fileHash, buffer);
   },
-  resetReceivingBuffer(peerId: string, fileHash: string,deleteBuffer:boolean) {
-    _resetReceivingBuffer(peerId, fileHash,deleteBuffer);
+  resetReceivingBuffer(peerId: string, fileHash: string, deleteBuffer: boolean) {
+    _resetReceivingBuffer(peerId, fileHash, deleteBuffer);
   },
   resetAllReceivingBuffers() {
     _resetAllReceivingBuffers();

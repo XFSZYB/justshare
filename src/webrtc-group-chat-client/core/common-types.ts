@@ -36,6 +36,8 @@ export enum _SignalType {
   WEBRTC_NEW_PEER_LEAVE = 13,
   WEBRTC_NEW_PASSTHROUGH = 14,
   UNAUTHORIZED = 15,
+  INVITE_USER_JOIN_ROOM = 16,
+  INVITE_USER_JOIN_ROOM_RES = 17
 
 }
 
@@ -76,6 +78,13 @@ export interface JoinRoomSuccessPayload {
   roomId: string;
   roomName: string;
 }
+export interface InviteUserJoinRoomPayload {
+  jionRes: boolean;
+  msg: string;
+  isInvite?: boolean,
+  roomId?: string,
+  roomName?: string,
+}
 
 export interface ChatRoom {
   id: string;
@@ -87,7 +96,7 @@ export interface ChatRooms {
 }
 
 export interface UpdateRoomsPayload {
-  rooms: ChatRoom [];
+  rooms: ChatRoom[];
   type?: string,
   roomId?: string,
   roomName?: string,
@@ -227,6 +236,7 @@ export enum CallingStateChangingType {
  */
 
 export interface FileMeta {
+  roomId: string;
   name: string;
   type: string;
   size: number;
