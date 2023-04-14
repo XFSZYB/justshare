@@ -2,23 +2,26 @@
 import { computed } from 'vue'
 import { NInput, NPopconfirm, NScrollbar } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore,useConnectStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 const { isMobile } = useBasicLayout()
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const connectStore = useConnectStore()
 
-const dataSources = computed(() => chatStore.history)
+const dataSources = computed(() => connectStore.roomIds)
+
 
 async function handleSelect({ uuid }: Chat.History) {
+  console.log('uuid',uuid)
   if (isActive(uuid))
     return
-
-  if (chatStore.active)
-    chatStore.updateHistory(chatStore.active, { isEdit: false })
-  await chatStore.setActive(uuid)
+    connectStore.setCurrentUUID(uuid)
+  // if (chatStore.active)
+  //   chatStore.updateHistory(chatStore.active, { isEdit: false })
+  // await chatStore.setActive(uuid)
 
   if (isMobile.value)
     appStore.setSiderCollapsed(true)
@@ -43,7 +46,7 @@ function handleEnter({ uuid }: Chat.History, isEdit: boolean, event: KeyboardEve
 }
 
 function isActive(uuid: string) {
-  return chatStore.active === uuid
+  return connectStore.currentUUID === uuid
 }
 </script>
 

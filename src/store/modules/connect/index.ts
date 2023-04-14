@@ -5,9 +5,10 @@ import { getCurrentUUID, setCurrentUUID } from './helper'
 export const useConnectStore = defineStore('connect-store', {
     state: () => {
         return {
+            roomIds:[],
             createRoomLoading:false,
             currentUUID:getCurrentUUID(),
-            roomList: {},
+            roomList: [],
             userId: '',
             userName: '',
             roomsData: <any>[],
@@ -16,6 +17,9 @@ export const useConnectStore = defineStore('connect-store', {
         }
     },
     actions: {
+        setRoomIds(val:any){
+            this.roomIds=val
+        },
         setCreateRoomLoading (flag:boolean){
             this.createRoomLoading = flag
         },
@@ -36,19 +40,19 @@ export const useConnectStore = defineStore('connect-store', {
             this.userName = username
         },
 
-        setRoomList(rooms: object) {
+        setRoomList(rooms: []) {
             this.roomList = rooms
             this.roomsData = this.getRoomList(rooms)
         },
-        getRoomList(rooms: object) {
+        getRoomList(rooms: []) {
             console.log('initRoomsData====>',rooms)
             if(!rooms){
                 return []
             }
-            const tempList = Object.values(rooms).map((item: any) => {
+            const tempList = rooms.map((item: any) => {
                 const tempItem: any = {}
-                tempItem.label = item.name
-                tempItem.value = item.id
+                tempItem.label = item.room_name
+                tempItem.value = item.room_id
                 return tempItem
             })
             console.log('tempList===>', tempList)

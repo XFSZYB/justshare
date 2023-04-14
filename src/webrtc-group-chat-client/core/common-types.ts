@@ -87,7 +87,7 @@ export interface ChatRooms {
 }
 
 export interface UpdateRoomsPayload {
-  rooms: ChatRooms;
+  rooms: ChatRoom [];
   type?: string,
   roomId?: string,
   roomName?: string,

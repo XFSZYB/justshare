@@ -50,6 +50,7 @@ const resData = async () => {
     ms.error(myRooms.payload.msg)
     return
   }
+  connectStore.setRoomIds(myRooms.payload.roomIds)
   const roomListRes: any = await fetchInitialRoomList('')
   if (roomListRes.status === 'Success') {
     console.log('roomListRes==>', roomListRes)
@@ -72,10 +73,10 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom } = useScroll()
 
 // const { uuid } = route.params as { uuid: string }
-const uuid = connectStore.currentUUID || ''
+// const uuid = connectStore.currentUUID || ''
 // connectStore.setCurrentUUID(uuid)
-const dataSources = computed(() => chatStore.getChatByUuid(uuid))
-const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
+const dataSources = computed(() => chatStore.getChatByUuid(connectStore.currentUUID))
+// const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
 const prompt = ref<string>('')
 const loading = ref<boolean>(false)
@@ -111,7 +112,7 @@ async function onConversation() {
   // controller = new AbortController()
 
   addChat(
-    uuid,
+    connectStore.currentUUID,
     {
       ...textMessage,
       dateTime: new Date().toLocaleString(),
@@ -146,7 +147,7 @@ async function onRegenerate(index: number) {
   loading.value = true
 
   updateChat(
-    uuid,
+    connectStore.currentUUID,
     index,
     {
       dateTime: new Date().toLocaleString(),
@@ -175,7 +176,7 @@ async function onRegenerate(index: number) {
         try {
           const data = JSON.parse(chunk)
           updateChat(
-            uuid,
+            connectStore.currentUUID,
             index,
             {
               dateTime: new Date().toLocaleString(),
@@ -197,7 +198,7 @@ async function onRegenerate(index: number) {
   catch (error: any) {
     if (error.message === 'canceled') {
       updateChatSome(
-        uuid,
+        connectStore.currentUUID,
         index,
         {
           loading: false,
@@ -209,7 +210,7 @@ async function onRegenerate(index: number) {
     const errorMessage = error?.message ?? t('common.wrong')
 
     updateChat(
-      uuid,
+      connectStore.currentUUID,
       index,
       {
         dateTime: new Date().toLocaleString(),
@@ -277,7 +278,7 @@ function handleDelete(index: number) {
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
     onPositiveClick: () => {
-      chatStore.deleteChatByUuid(uuid, index)
+      chatStore.deleteChatByUuid(connectStore.currentUUID, index)
     },
   })
 }
@@ -294,7 +295,7 @@ function handleClear() {
     positiveText: t('common.yes'),
     negativeText: t('common.no'),
     onPositiveClick: () => {
-      chatStore.clearChatByUuid(uuid)
+      chatStore.clearChatByUuid(connectStore.currentUUID)
     },
   })
 }

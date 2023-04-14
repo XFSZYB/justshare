@@ -163,17 +163,17 @@ export const leaveRoom = (roomId: string) => {
 //     },
 //   ],
 // };
-GroupChatService.onWebSocketOpen((payload) => {
-    console.log('onWebSocketOpen===>', payload)
-    // if (payload.type === 'open') {
-    const currentUUID = useConnectStore().currentUUID
-    if(currentUUID){
-        joinRoom(currentUUID)
-    }
+// GroupChatService.onWebSocketOpen((payload) => {
+//     console.log('onWebSocketOpen===>', payload)
+//     // if (payload.type === 'open') {
+//     const currentUUID = useConnectStore().currentUUID
+//     if(currentUUID){
+//         joinRoom(currentUUID)
+//     }
     
-    // }
+//     // }
 
-})
+// })
 // https://uuasd1.bond/
 GroupChatService.onWebSocketClose((payload) => {
     console.warn('payload===>', payload)
@@ -186,7 +186,7 @@ GroupChatService.onWebSocketUnauthorized((payload) => {
     }
 })
 GroupChatService.onRoomsInfoUpdated((payload) => {
-    const rooms = payload.rooms;
+    const rooms:any = payload.rooms || [];
     const type = payload.type;
     const roomId = payload.roomId
     const roomName = payload.roomName
@@ -197,6 +197,9 @@ GroupChatService.onRoomsInfoUpdated((payload) => {
     if (rooms) {
         // console.warn('onRoomsInfoUpdated===>', rooms)
         updateConnectStore().setRoomList(rooms)
+        rooms.forEach((item:any)=>{
+            GroupChatService.joinRoom(item.room_id)
+        })
         //   store.dispatch(updateRoomList(rooms));
     }
 });
