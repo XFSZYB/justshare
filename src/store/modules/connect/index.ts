@@ -68,9 +68,9 @@ export const useConnectStore = defineStore('connect-store', {
             return tempList
         },
         getCurrentRoomName() {
-            const currentRoom: any = this.roomList.filter(((item: any) => item.room_id === this.currentUUID))[0]
+            const currentRoom: any = this.roomIds.filter(((item: any) => item.room_id === this.currentUUID || item.uuid === this.currentUUID ))[0]
             if (currentRoom) {
-                return currentRoom.room_name
+                return currentRoom.title || currentRoom.room_name
             }
             return ''
         },
