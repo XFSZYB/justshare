@@ -15,7 +15,6 @@ const dataSources = computed(() => connectStore.roomIds)
 
 
 async function handleSelect({ uuid }: Chat.History) {
-  console.log('uuid',uuid)
   if (isActive(uuid))
     return
     connectStore.setCurrentUUID(uuid)

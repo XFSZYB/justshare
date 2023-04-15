@@ -10,6 +10,7 @@ import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
+import InviteUser from './modals/InviteUser.vue'
 import { useChatStore, useConnectStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
@@ -23,6 +24,7 @@ const ms = useMessage()
 // const route = useRoute()
 const router = useRouter()
 const show = computed(() => connectStore.createRoomLoading)
+const showModal = ref(false)
 const resData = async () => {
   const userData: any = JSON.parse(localStorage.getItem('userData') || '{}')
   const verifyLogin: any = await requestToSignin(userData.name, userData.passwd)
@@ -52,7 +54,7 @@ const resData = async () => {
   }
   connectStore.setRoomIds(myRooms.payload.roomIds)
   myRooms.payload.roomIds.forEach((item: any) => {
-    joinRoom(item.uuid)
+    joinRoom(item.room_id)
   })
   const roomListRes: any = await fetchInitialRoomList('')
   if (roomListRes.status === 'Success') {
@@ -377,6 +379,11 @@ function handleChange(e: any) {
   }
 
 }
+
+function handleShow(e:any){
+  console.log(e)
+  showModal.value = e
+}
 </script>
 
 <template>
@@ -419,6 +426,16 @@ function handleChange(e: any) {
           正在创建，请稍后...
         </template>
       </n-spin> -->
+      <div class="w-full max-w-screen-xl m-auto " style="position: absolute; bottom: 80px; right: 24px;">
+      <div class="flex items-center justify-end space-x-2 ">
+      
+      <HoverButton @click="handleShow(true)">
+            <span class="text-xl text-[#4f555e] dark:text-white ">
+              <SvgIcon icon="material-symbols:add-circle-outline" />
+            </span>
+          </HoverButton>
+    </div>
+    </div>
     </main>
 
 
@@ -427,9 +444,9 @@ function handleChange(e: any) {
       <div class="w-full max-w-screen-xl m-auto">
         <div class="flex items-center justify-between space-x-2">
           <HoverButton>
-            <n-upload ref="upload" :default-upload="false" :show-file-list="false" multiple @change="handleChange">
+            <n-upload ref="upload" :default-upload="false" :show-file-list="false" style="width: auto;height: 100%; display: flex; align-items: center;" multiple @change="handleChange">
               <span class="text-xl text-[#4f555e] dark:text-white">
-                <SvgIcon icon="material-symbols:upload-sharp" />
+                <SvgIcon icon="ri:upload-2-line" />
               </span>
             </n-upload>
             <!-- <span class="text-xl text-[#4f555e] dark:text-white">
@@ -454,4 +471,5 @@ function handleChange(e: any) {
       </div>
     </footer>
   </div>
+  <InviteUser :show-modal="showModal" @handleShow = "handleShow"></InviteUser>
 </template>

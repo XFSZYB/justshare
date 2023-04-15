@@ -197,7 +197,7 @@ function _inviteUserJoinRoomSignaling(userId: string, roomAdmin: string, roomId:
   if (!_webSocketUrl || _webSocketUrl.length === 0 || roomId.length === 0 || userId.length === 0 || roomAdmin.length === 0) {
     return;
   }
-  SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.JOIN_ROOM, {
+  SocketManager.emitMessageEvent(_webSocketUrl, _SignalType.INVITE_USER_JOIN_ROOM, {
     roomId: roomId,
     userId: userId,
     roomAdmin: roomAdmin

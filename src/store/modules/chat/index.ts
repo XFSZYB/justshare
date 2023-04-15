@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia'
 import { getLocalState, setLocalState, defaultState } from './helper'
 import { router } from '@/router'
+import {useConnectStore} from '../connect'
 
 export const useChatStore = defineStore('chat-store', {
   state: (): Chat.ChatState => defaultState(),
 
   getters: {
-    getChatHistoryByCurrentActive(state: Chat.ChatState) {
-      const index = state.history.findIndex(item => item.uuid === state.active)
-      if (index !== -1)
-        return state.history[index]
-      return null
-    },
+    // getChatHistoryByCurrentActive(state: Chat.ChatState) {
+    //   const index = state.history.findIndex(item => item.uuid === state.active)
+    //   if (index !== -1)
+    //     return state.history[index]
+    //   return null
+    // },
 
     getChatByUuid(state: Chat.ChatState) {
       return (uuid?: string) => {

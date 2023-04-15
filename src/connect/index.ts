@@ -17,8 +17,8 @@ const updateChatStore = () => {
     return chatStore
 }
 
-const updateRouter=()=>{
-    const router  = useRouter()
+const updateRouter = () => {
+    const router = useRouter()
     return router
 }
 
@@ -151,30 +151,33 @@ export const leaveRoom = (roomId: string) => {
     if (!roomId || roomId.length === 0) return;
     GroupChatService.leaveRoom();
 }
-// const iceServerUserName = env.TURN_SERVER_USER_NAME;
-// const iceServerCredential = env.TURN_SERVER_CREDENTIAL;
-// const iceServerUrls = JSON.parse(env.TURN_SERVER_URLS);
+export const inviteUser = (roomId: string, userid: string, roomAdmin: string) => {
+    if (!roomId || roomId.length === 0 || !roomAdmin || roomAdmin.length === 0 || !userid || userid.length === 0) return;
+    GroupChatService.onInviteUserJoinRoom(userid, roomAdmin, roomId)
+}
 
-// GroupChatService.peerConnectionConfig = {
-//   iceServers: [
-//     {
-//       username: iceServerUserName,
-//       credential: iceServerCredential,
-//       urls: iceServerUrls,
-//     },
-//   ],
-// };
-// GroupChatService.onWebSocketOpen((payload) => {
-//     console.log('onWebSocketOpen===>', payload)
-//     // if (payload.type === 'open') {
-//     const currentUUID = useConnectStore().currentUUID
-//     if(currentUUID){
-//         joinRoom(currentUUID)
-//     }
-    
-//     // }
+GroupChatService.onInviteUserJoinRoomRes(((payload: any) => {
+    /* {
+    "jionRes": true,
+    "msg": "",
+    "isInvite": true,
+    "roomId": "24c573e7-f88c-48f0-93f7-4d597e9c2c91",
+    "roomName": "886"
+}*/
+    try {
+        const { isInvite, roomId, roomName } = payload
+        if (isInvite) {
+            updateConnectStore().setRoomIds([...updateConnectStore().roomIds, { room_id: roomId, room_name: roomName }])
+            joinRoom(roomId)
+        }
 
-// })
+    } catch (e) {
+
+    }
+    console.log('onInviteUserJoinRoomRes===>', payload)
+}))
+
+
 // https://uuasd1.bond/
 GroupChatService.onWebSocketClose((payload) => {
     console.warn('payload===>', payload)
@@ -187,7 +190,7 @@ GroupChatService.onWebSocketUnauthorized((payload) => {
     }
 })
 GroupChatService.onRoomsInfoUpdated((payload) => {
-    const rooms:any = payload.rooms || [];
+    const rooms: any = payload.rooms || [];
     const type = payload.type;
     const roomId = payload.roomId
     const roomName = payload.roomName
@@ -196,9 +199,9 @@ GroupChatService.onRoomsInfoUpdated((payload) => {
         updateConnectStore().setCreateRoomLoading(false)
     }
     if (rooms) {
-        // console.warn('onRoomsInfoUpdated===>', rooms)
+        console.warn('onRoomsInfoUpdated===>', rooms)
         updateConnectStore().setRoomList(rooms)
-        rooms.forEach((item:any)=>{
+        rooms.forEach((item: any) => {
             GroupChatService.joinRoom(item.room_id)
         })
         //   store.dispatch(updateRoomList(rooms));
@@ -268,15 +271,15 @@ GroupChatService.onChatMessageReceived((message) => {
     }
     if (message && typeof message.text === "string") {
         defaultMessage.text = '';
-        try{
+        try {
             const msgData = JSON.parse(message.text)
             defaultMessage.text = msgData.msg
             uuid = msgData.roomId
-        }catch(e){
-    
+        } catch (e) {
+
         }
     }
-     
+
     const timestamp = (new Date()).getTime();
     const id = `${defaultMessage.userId}-${timestamp}`;
     const textMessage = {
@@ -335,7 +338,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             if (messageItem.fileProgress === 0 && !updateChatStore().getChatByUuidAndChatId(updateConnectStore().currentUUID, messageItem.id)) {
                 // console.warn('????')
                 updateChatStore().addChatByUuid(
-                    messageItem.roomId ||  updateConnectStore().currentUUID,
+                    messageItem.roomId || updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),
@@ -352,7 +355,7 @@ GroupChatService.onFileSendingRelatedDataChanged(
             } else if (isFileProgressCompleted) {
                 // console.warn('!!!!')
                 updateChatStore().updateChatSomeByUuidAndChatid(
-                    messageItem.roomId ||  updateConnectStore().currentUUID,
+                    messageItem.roomId || updateConnectStore().currentUUID,
                     messageItem.id,
                     {
                         ...messageItem,
@@ -417,7 +420,7 @@ GroupChatService.onFileReceivingRelatedDataChanged((receivingRelatedDataProxy) =
                 // console.warn('===tagA====', a)
                 messageItem = { ...messageItem, ...a }
                 updateChatStore().addChatByUuid(
-                    messageItem.roomId ||  updateConnectStore().currentUUID,
+                    messageItem.roomId || updateConnectStore().currentUUID,
                     {
                         ...messageItem,
                         dateTime: new Date().toLocaleString(),

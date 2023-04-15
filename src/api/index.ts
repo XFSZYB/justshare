@@ -78,10 +78,18 @@ export function fetchMyRoomIds<T>(userid: string) {
 
 }
 
-export function inviteUser<T>(roomAdmin: string, userId: string, roomId: string) {
+export function fetchMyCreateRoom<T>(userid: string) {
   return get<T>({
-    url: '/api/invite',
-    data: { roomAdmin, userId, roomId },
+    url: '/api/mycreateroomids',
+    data: { userid },
+  })
+
+}
+
+export function findUser<T>(username: string) {
+  return get<T>({
+    url: '/api/finduser',
+    data: { username },
   })
 
 }

@@ -3,18 +3,19 @@
 import { computed, nextTick, ref } from 'vue'
 import { SvgIcon } from '@/components/common'
 import  SearchBox  from '../../components/SearchBox/index.vue'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore,useConnectStore } from '@/store'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 const appStore = useAppStore()
-const chatStore = useChatStore()
+const connectStore = useConnectStore()
+// const chatStore = useChatStore()
 // const { isMobile } = useBasicLayout()
 
 let expand = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
-const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
-
+// const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
+const currentChatHistory = computed(() => connectStore.getCurrentRoomName())
 function handleUpdateCollapsed() {
   appStore.setSiderCollapsed(!collapsed.value)
 }
@@ -46,7 +47,7 @@ function changeExpand (val:boolean ) {
       <h1 v-if="!expand"
         class="flex-1 px-4 overflow-hidden text-center cursor-pointer select-none text-ellipsis whitespace-nowrap"
         @dblclick="onScrollToTop">
-        {{ currentChatHistory?.title ?? '' }}
+        {{ currentChatHistory ?? '' }}
       </h1>
       <SearchBox @changeExpand="changeExpand"/>
 
