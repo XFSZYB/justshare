@@ -26,18 +26,25 @@ const typeEnum = {
   WEBRTC_NEW_PEER_ARIVAL: 12,
   WEBRTC_NEW_PEER_LEAVE: 13,
   WEBRTC_NEW_PASSTHROUGH: 14,
+  UNAUTHORIZED: 15,
+  INVITE_USER_JOIN_ROOM: 16,
+  INVITE_USER_JOIN_ROOM_RES:17,
 };
 
 const createMessage = (selectedType, payload) => {
+  // console.info('checkout===>')
   const typeValueSet = new Set(Object.values(typeEnum));
   if (!typeValueSet.has(selectedType)) {
     console.log(chalk.red`'createMessage' has received a wrong 'selectedType'( ${selectedType} )`);
     return null;
   }
 
-  const message = {};
+  const message = { status: 'Success' };
   message.type = selectedType;
   message.payload = payload;
+  if (payload && payload.status) {
+    message.status = payload.status
+  }
 
   return message;
 };
@@ -82,6 +89,7 @@ exports.sendThroughResponse = (res, selectedType, payload) => {
 };
 
 exports.sendThroughWebsocket = (websocket, selectedType, payload) => {
+
   if (!websocket) {
     console.log(
       chalk.red`[WebSocket] msg of type(${selectedType}) and of payload(${JSON.stringify(
@@ -92,15 +100,15 @@ exports.sendThroughWebsocket = (websocket, selectedType, payload) => {
   }
 
   const selectedTypeName = findTypeNameByTypeValue(selectedType);
+
   if (!selectedTypeName || selectedTypeName.length === 0) {
     console.log(
       chalk.red`[WebSocket] the log to show signal type name cannot be printed because 'selectedType'( pointing to ${selectedTypeName} ) param is invalid`
     );
   } else {
     console.log(
-      `[${chalk.green`WebSocket`}] ${chalk.green`${selectedTypeName}`} signal msg ${chalk.blue`to`} a user of a name(${chalk.green`${
-        websocket.username ? websocket.username : "unknown"
-      }`})`
+      `[${chalk.green`WebSocket`}] ${chalk.green`${selectedTypeName}`} signal msg ${chalk.blue`to`} a user of a name(${chalk.green`${websocket.username ? websocket.username : "unknown"
+        }`})`
     );
   }
 

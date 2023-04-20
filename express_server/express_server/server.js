@@ -1,9 +1,8 @@
 require('dotenv').config()
-
+const fs = require("fs");
 // const createError = require('http-errors');
 // const cookieParser = require('cookie-parser');
 const path = require("path");
-const fs = require("fs");
 const express = require("express");
 const app = express();
 
@@ -15,9 +14,14 @@ const apiRouter = require("./routers/apiRouter");
 const mongoDBController = require("./controllers/mongoDBController");
 const websocketController = require("./controllers/websocketController");
 const sessionController = require("./controllers/sessionController");
+const sqlite3Controller = require('./controllers/sqliteController')
 const sessionParser = sessionController.sessionParser;
-
+const authenticatedUserIds = sessionController.authenticatedUserIds;
 const openMongDBConnection = false;
+
+
+
+
 
 /**
  * ??? middleware setup
@@ -54,7 +58,7 @@ app.use(express.static(path.join(process.cwd(), "public")));
  */
 
 // middleware to test if authenticated
-function isAuthenticated (req, res, next) {
+function isAuthenticated(req, res, next) {
   if (req.session.userId) next()
   else next('route')
 }
@@ -106,9 +110,25 @@ server.on("upgrade", websocketController.handleUpgrade);
  * start server listening & mongoose connection setup
  */
 
-server.listen(process.env.EXPRESS_SERVER_PORT, () => {
+server.listen(process.env.EXPRESS_SERVER_PORT, async () => {
   console.log(`express server run on PORT(${process.env.EXPRESS_SERVER_PORT})`);
-
+  try {
+    await sqlite3Controller.initDB()
+    const allUser = await sqlite3Controller.getAllUserId()
+    
+    if(allUser.length>0){
+      userid = allUser.map(item=>item.user_id)
+      userid.forEach(item=>{
+        authenticatedUserIds.add(item)
+      })
+      // authenticatedUserIds= new Set ([...userid])
+      // console.log(authenticatedUserIds)
+      
+    }
+   
+  } catch (e) {
+    console.info(e)
+  }
   if (openMongDBConnection) {
     mongoDBController.connectMongDB();
   }
